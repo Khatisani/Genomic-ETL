@@ -26,4 +26,8 @@ def validate_fastq_structure(input_path):
             raise ValueError(
                 f"FASTQ Format Error: Sequence length ({len(lines[1])}) does not match "
                 f"Phred Quality Score string length ({len(lines[3])}) in the first record." )
+
+def calculate_average_phred(quality_string):
+    total_score = sum(ord(char) - 33 for char in quality_string)
+    return total_score / len(quality_string)
             
