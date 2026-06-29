@@ -4,10 +4,14 @@ import sys
 
 def check_validity(input_path):
     if not os.path.exists(input_path):
-        raise FileNotFoundError(f"The input file path '{input_path}' does not exist.")
+        print(f"Error: The file '{input_path}' does not exist.")
+        sys.exit(1)
     
     if not (input_path.endswith('.fastq') or input_path.endswith('.fq')):
-        raise ValueError(f"Invalid file extension. The file '{input_path}' must be a .fastq or .fq file.")
+        print(f"Error: Invalid extension. '{input_path}' must be a .fastq or .fq file.")
+        sys.exit(1)
+
+
 
 def validate_fastq_structure(input_path):
     with open(input_path, 'r') as f:
