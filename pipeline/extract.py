@@ -1,4 +1,3 @@
-
 import os
 import sys
 
@@ -11,66 +10,61 @@ def check_validity(input_path):
         print(f"Error: Invalid extension. '{input_path}' must be a .fastq or .fq file.")
         sys.exit(1)
 
-
-
 def validate_fastq_structure(input_path):
     with open(input_path, 'r') as f:
         lines = [f.readline().strip() for _ in range(4)]
         
         if not lines[0]:
-            raise ValueError("The FASTQ file is empty.")
+            print("Error: The provided FASTQ file is completely empty.")
+            sys.exit(1)
         if any(not line for line in lines):
-            raise ValueError("The FASTQ file is malformed.")
+            print("Error: FASTQ file is malformed. Incomplete initial 4-line record block.")
+            sys.exit(1)
         
         if not lines[0].startswith('@'):
-            raise ValueError(f"FASTQ Format Error: Line 1 must begin with '@'. Found: '{lines[0][0]}'")
+            print(f" Format Error: Line 1 must begin with '@'. Found: '{lines[0][0]}'")
+            sys.exit(1)
         if not lines[2].startswith('+'):
-            raise ValueError(f"FASTQ Format Error: Line 3 must begin with '+'. Found: '{lines[2][0]}'")
+            print(f"Format Error: Line 3 must begin with '+'. Found: '{lines[2][0]}'")
+            sys.exit(1)
         if len(lines[1]) != len(lines[3]):
-            raise ValueError(
-                f"FASTQ Format Error: Sequence length ({len(lines[1])}) does not match "
-                f"Phred Quality Score string length ({len(lines[3])}) in the first record." )
+            print(f"Format Error: Sequence length ({len(lines[1])}) mismatch with Quality string length ({len(lines[3])}).")
+            sys.exit(1)
 
-def calculate_average_phred(quality_string):
-    total_score = sum(ord(char) - 33 for char in quality_string)
-    return total_score / len(quality_string)
 
-def run_extraction(input_path, output_path, min_q):
-    check_file_validity(input_path)
-    validate_fastq_structure(input_path)
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python3 extract.py <filename.fastq>")
+        sys.exit(1)
+        
+    input_file = sys.argv[1]
+    output_staging_file = "data/extracted_stage.tmp"
     
-    print("File validation passed. Proceeding with quality filtering...")
+    check_validity(input_file)
+    validate_fastq_structure(input_file)
     
-    reads_processed = 0
-    reads_retained = 0
+    print(f"File check passed for: {input_file}")
+    print("Extracting raw sequences...")
     
-    with open(input_path, 'r') as infile, open(output_path, 'w') as outfile:
+    os.makedirs("data", exist_ok=True)
+    
+    total_records = 0
+    
+    with open(input_file, 'r') as infile, open(output_staging_file, 'w') as outfile:
         while True:
-            line1 = infile.readline().strip()
-            
+            line1 = infile.readline()
             if not line1:
-                break 
-            line2 = infile.readline().strip()
-            line3 = infile.readline().strip()
-            line4 = infile.readline().strip()
-            
-            reads_processed += 1
-            
-            if 'N' in line2:
-                continue
+                break
                 
-            avg_q = calculate_average_phred(line4)
+            line2 = infile.readline()
+            line3 = infile.readline()
+            line4 = infile.readline()
             
-            if avg_q < min_q:
-                continue
+            outfile.write(f"{line1}{line2}{line3}{line4}")
+            total_records += 1
             
-            fasta_header = f">{line1[1:]}"
-            
-            outfile.write(f"{fasta_header}\n{line2}\n")
-            
-            reads_retained += 1
+    print(f"Extraction Complete.")
+    print(f"Staged {total_records} raw records in '{output_staging_file}'")
 
-    print(f"Extraction Metrics: ")
-    print(f"   - Total Reads Ingested: {reads_processed}")
-    print(f"   - Total Reads Retained: {reads_retained} (Drop Rate: {((reads_processed - reads_retained)/reads_processed)*100:.2f}%)")
-            
+if __name__ == "__main__":
+    main()
