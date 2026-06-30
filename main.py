@@ -50,6 +50,25 @@ def main():
 
     print("\n---------------Stage 2 complete.------------------\n")
 
+# --------------------------------------------------
+# STAGE 3: 
+# --------------------------------------------------
+
+    print("\n--------------------------------------------------")
+    print("[STAGE 3] Running Loading Engine...")
+    print("--------------------------------------------------\n")
+
+    # load_process = subprocess.run(
+    #     ["python3", "pipeline/load.py", staging_file],
+    #     capture_output=False
+    # )
+
+    # if load_process.returncode != 0:
+    #     print("\nPipeline aborted: Stage 3 Loading failed.")
+    #     sys.exit(load_process.returncode)
+
+    print("\n---------------Stage 3 complete.------------------\n")
+
     print("\n==================================================")
     print("Genomic-ETL Pipeline Successfully Executed!")
     print("==================================================\n")
