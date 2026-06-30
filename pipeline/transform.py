@@ -105,7 +105,6 @@ def main():
     print(f"  - Retained: {passed_records}/{total_records} high-quality sequences.")
     print(f"  - Quality Passed:  {passed_records}")
     print(f"  - High-Risk Alerts: {flagged_records}")
-    print(f"==================================================")
 
 
 if __name__ == "__main__":

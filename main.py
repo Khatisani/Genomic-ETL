@@ -45,7 +45,7 @@ def main():
     )
 
     if trans_process.returncode != 0:
-        print("\n❌ Pipeline aborted: Stage 2 Transformation failed.")
+        print("\nPipeline aborted: Stage 2 Transformation failed.")
         sys.exit(trans_process.returncode)
 
     print("\n---------------Stage 2 complete.------------------\n")
