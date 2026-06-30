@@ -1,7 +1,7 @@
 import unittest
 import os
 import sys
-from pipeline.transform import ascii_to_phred, filter_low_quality, load_biomarkers, parse_staged_records
+from pipeline.transform import ascii_to_phred, contains_motif, filter_low_quality, load_biomarkers, parse_staged_records
 
 class TestTransform(unittest.TestCase):
 
@@ -135,6 +135,30 @@ class TestTransform(unittest.TestCase):
         finally:
             if os.path.exists(temp_fasta):
                 os.remove(temp_fasta)
+
+    def test_contains_motif_success_case_insensitive(self):
+        biomarkers = ["AATTGG", "CCGGAA"]
+        sequence = "atcaattggctga"
+        
+        self.assertEqual(contains_motif(sequence, biomarkers), "AATTGG")
+
+    def test_contains_motif_returns_first_match(self):
+        biomarkers = ["CCGGAA", "AATTGG"]
+        sequence = "AATTGGCCGGAA" 
+        
+        self.assertEqual(contains_motif(sequence, biomarkers), "CCGGAA")
+
+    def test_contains_motif_no_match(self):
+        biomarkers = ["AAAAAA", "CCCCCC"]
+        sequence = "GTTTGGCCGGAA"
+        
+        self.assertIsNone(contains_motif(sequence, biomarkers))
+
+    def test_contains_motif_empty_inputs(self):
+        self.assertIsNone(contains_motif("", ["AATT"]), "Empty sequence should return None.")
+        self.assertIsNone(contains_motif("AATTGG", []), "Empty biomarker list should return None.")
+
+
 
 if __name__ == "__main__":
     unittest.main()
