@@ -1,7 +1,7 @@
 import unittest
 import os
 import sys
-from pipeline.transform import ascii_to_phred, parse_staged_records
+from pipeline.transform import ascii_to_phred, filter_low_quality, parse_staged_records
 
 class TestTransform(unittest.TestCase):
 
@@ -72,6 +72,21 @@ class TestTransform(unittest.TestCase):
     def test_ascii_to_phred_out_of_bounds(self):
         with self.assertRaises(ValueError):
             ascii_to_phred(" ")
+
+    def test_filter_low_quality_pass(self):
+        high_quality = [30, 35, 40, 25]
+        self.assertTrue(filter_low_quality(high_quality, threshold=20))
+
+    def test_filter_low_quality_drop(self):
+        low_quality = [10, 12, 15, 8]
+        self.assertFalse(filter_low_quality(low_quality, threshold=20))
+
+    def test_filter_low_quality_exact_boundary(self):
+        boundary_quality = [20, 20, 20, 20]
+        self.assertTrue(filter_low_quality(boundary_quality, threshold=20))
+
+    def test_filter_low_quality_empty_scores(self):
+        self.assertFalse(filter_low_quality([], threshold=20))
 
 if __name__ == "__main__":
     unittest.main()
