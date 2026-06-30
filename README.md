@@ -18,15 +18,17 @@ At the moment, the pipeline supports:
 ```text
 Genomic-ETL/
 ├── data/
-│   └── example.fastq
-├── pipeline/
-│   ├── __init__.py
-│   ├── extract.py
-│   └── transform_clean.py
+│   ├── biomarkers.fasta         # HYPOTHETICAL: Mock sequence data for prototype testing
+│   ├── example.fastq            # HYPOTHETICAL: Local structure validation file
+│   ├── multi_seq.fastq          # HYPOTHETICAL: Multi-record mock dataset
+│   ├── sample1.fastq            # REAL: Authentic data from Galaxy Project Repository
+│   └── extracted_stage.tmp      # STAGED: Extracted raw valid records cache
 ├── tests/
-│   └── test_extract.py
-├── main.py
-└── README.md
+│   └── test_extract.py          # Extraction test suite
+├── extract.py                   # Stage 1: Ingestion & Validation Engine
+├── transform.py
+├── main.py                      # Master Pipeline Orchestrator (Functional Draft)
+└── README.md                    # Project Documentation
 ```
 
 ## Current implementation status
@@ -34,7 +36,7 @@ Genomic-ETL/
 The repository currently has:
 
 - Stage 1: Extraction and validation implemented in pipeline/extract.py
-- Stage 2: A transformation prototype implemented in pipeline/transform_clean.py
+- Stage 2: A transformation prototype implemented in pipeline/transform.py
 - Stage 3: Loading and final output generation are still pending
 
 The main entry point in main.py is a draft orchestrator. It is intended to coordinate the pipeline stages, but the full end-to-end workflow is not yet fully connected.
@@ -64,6 +66,11 @@ To run the test suite:
 ```bash
 python3 -m unittest tests/test_extract.py
 ```
+
+## Data Origin
+Hypothetical Data (biomarkers.fasta, example.fastq, multi_seq.fastq): Programmatically generated or manually structured mock files. They do not contain real biological samples; instead, they serve as stable local baselines to verify that our extraction logic catches structural edge cases and structural anomalies.
+
+Real-World Benchmark Data (data/sample1.fastq): Obtained directly from the open-source Galaxy Project Test Data Repository. This contains authentic sequencer outputs with real biological base calls and instrument quality scores, serving as our true production benchmark.
 
 ## Future direction
 
