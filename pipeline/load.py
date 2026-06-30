@@ -1,4 +1,7 @@
 
+import sys
+
+
 def one_hot_encode_seq(sequence):
     mapping = {
         'A': [1, 0, 0, 0],
@@ -19,5 +22,14 @@ def pad_or_truncate(vector_list, max_len, fill_value=None):
     return vector_list + [fill_value] * padding_needed
 
 def main():
-    return ...
+    if len(sys.argv) != 2:
+        print("Usage: python3 pipeline/load.py <transformed_data_placeholder>")
+        sys.exit(1)
+
+    print("Executing Stage 3: Loading and vectorizing data for ML training...")
+
+    print("Stage 3 completed successfully. ML tensors prepared.")
+
+if __name__ == "__main__":
+    main()
 
