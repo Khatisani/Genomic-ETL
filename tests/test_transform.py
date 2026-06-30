@@ -1,7 +1,7 @@
 import unittest
 import os
 import sys
-from pipeline.transform import ascii_to_phred, filter_low_quality, parse_staged_records
+from pipeline.transform import ascii_to_phred, filter_low_quality, load_biomarkers, parse_staged_records
 
 class TestTransform(unittest.TestCase):
 
@@ -87,6 +87,54 @@ class TestTransform(unittest.TestCase):
 
     def test_filter_low_quality_empty_scores(self):
         self.assertFalse(filter_low_quality([], threshold=20))
+
+    def test_load_biomarkers_success(self):
+        real_fasta_path = "data/biomarkers.fasta"
+    
+        if not os.path.exists(real_fasta_path):
+            self.skipTest(f"Skipping: '{real_fasta_path}' not found in data directory.")
+            
+        motifs = load_biomarkers(real_fasta_path)
+    
+        self.assertIsInstance(motifs, list, "Function should return a list.")
+        self.assertGreater(len(motifs), 0, "Biomarker list should not be empty.")
+        
+        for motif in motifs:
+            self.assertTrue(motif.isupper(), f"Motif '{motif}' was not properly converted to uppercase.")
+            self.assertFalse(motif.startswith('>'), f"Header line '{motif}' was incorrectly included in motifs.")
+
+    def test_load_biomarkers_missing_file(self):
+        missing_fasta = "data/non_existent_biomarkers_file.fasta"
+    
+        if os.path.exists(missing_fasta):
+            os.remove(missing_fasta)
+            
+        motifs = load_biomarkers(missing_fasta)
+        self.assertEqual(motifs, [], "A missing file should return an empty list.")
+
+    def test_load_biomarkers_with_empty_and_whitespace_lines(self):
+        temp_fasta = "data/temp_whitespace_test.fasta"
+        with open(temp_fasta, "w") as f:
+            f.write(">Sequence_1\nATCG\n\n   \n>Sequence_2\nGCTA\n")
+            
+        try:
+            motifs = load_biomarkers(temp_fasta)
+            self.assertEqual(motifs, ["ATCG", "GCTA"], "Failed to strip out empty or whitespace-only lines.")
+        finally:
+            if os.path.exists(temp_fasta):
+                os.remove(temp_fasta)
+
+    def test_load_biomarkers_only_headers(self):
+        temp_fasta = "data/temp_headers_only.fasta"
+        with open(temp_fasta, "w") as f:
+            f.write(">Header1\n>Header2\n>Header3\n")
+            
+        try:
+            motifs = load_biomarkers(temp_fasta)
+            self.assertEqual(motifs, [], "Returned data from a file that contained zero sequence lines.")
+        finally:
+            if os.path.exists(temp_fasta):
+                os.remove(temp_fasta)
 
 if __name__ == "__main__":
     unittest.main()
