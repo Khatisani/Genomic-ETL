@@ -20,6 +20,9 @@ def parse_staged_records(staging_path):
             
             yield (line1.strip(), line2.strip(), line3.strip(), line4.strip())
 
+def ascii_to_phred(quality_string):
+    return [ord(char) - 33 for char in quality_string]
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python3 pipeline/transform.py <staging_file.tmp>")
@@ -28,11 +31,14 @@ def main():
     staging_file = sys.argv[1]
     print(f"Starting Stage 2 transformation on: {staging_file}")
     
-    record_count = 0
     for header, seq, spacer, qual in parse_staged_records(staging_file):
-        record_count += 1
+        print(f"Sequence: {seq}")
+        print(f"Raw ASCII Quality: {qual}")
         
-    print(f"Transformation stream verified. Successfully parsed {record_count} staged records.")
+        numeric_scores = ascii_to_phred(qual)
+        print(f"Transformed Numeric Phred Scores: {numeric_scores}\n")
+        
+    print("Transformation stream verified completely.")
 
 if __name__ == "__main__":
     main()
