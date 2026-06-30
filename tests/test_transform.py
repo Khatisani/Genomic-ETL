@@ -1,7 +1,7 @@
 import unittest
 import os
 import sys
-from pipeline.transform import parse_staged_records
+from pipeline.transform import ascii_to_phred, parse_staged_records
 
 class TestTransform(unittest.TestCase):
 
@@ -61,15 +61,17 @@ class TestTransform(unittest.TestCase):
             
         self.assertEqual(context.exception.code, 1, "Parser allowed a non-.tmp file format to propagate.")
 
+    def test_ascii_to_phred_with_real_characters(self):
+        self.assertEqual(ascii_to_phred("!"), [0])
+        self.assertEqual(ascii_to_phred("I"), [40])
+        self.assertEqual(ascii_to_phred("@ABC"), [31, 32, 33, 34])
 
+    def test_ascii_to_phred_empty_string(self):
+        self.assertEqual(ascii_to_phred(""), [])
 
-
-
-
-
-
-
-
+    def test_ascii_to_phred_out_of_bounds(self):
+        with self.assertRaises(ValueError):
+            ascii_to_phred(" ")
 
 if __name__ == "__main__":
     unittest.main()
