@@ -3,7 +3,7 @@ import os
 import sys
 
 def parse_staged_records(staging_path):
-    
+
     if not staging_path.lower().endswith('.tmp'):
         print(f"Error: Invalid file format '{staging_path}'. Expected a staged '.tmp' file.")
         sys.exit(1)
@@ -26,7 +26,13 @@ def parse_staged_records(staging_path):
             yield (line1.strip(), line2.strip(), line3.strip(), line4.strip())
 
 def ascii_to_phred(quality_string):
-    return [ord(char) - 33 for char in quality_string]
+    scores = []
+    for char in quality_string:
+        score = ord(char) - 33
+        if score < 0:
+            raise ValueError(f"Illegal character '{char}' detected. Resulting Phred score {score} is below 0.")
+        scores.append(score)
+    return scores
 
 def filter_low_quality(phred_scores, threshold=20):
     if not phred_scores:
