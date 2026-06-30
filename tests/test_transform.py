@@ -1,7 +1,8 @@
+from io import StringIO
 import unittest
 import os
 import sys
-from pipeline.transform import ascii_to_phred, contains_motif, filter_low_quality, load_biomarkers, parse_staged_records
+from pipeline.transform import ascii_to_phred, contains_motif, filter_low_quality, load_biomarkers, main, parse_staged_records
 
 class TestTransform(unittest.TestCase):
 
@@ -158,6 +159,128 @@ class TestTransform(unittest.TestCase):
         self.assertIsNone(contains_motif("", ["AATT"]), "Empty sequence should return None.")
         self.assertIsNone(contains_motif("AATTGG", []), "Empty biomarker list should return None.")
 
+
+    def setUp(self):
+        self.integration_stage = "data/integration_test_stage.tmp"
+        self.real_biomarker_file = "data/biomarkers.fasta"
+        self.saved_argv = sys.argv[:] 
+        os.makedirs("data", exist_ok=True)
+
+    def tearDown(self):
+        sys.argv = self.saved_argv
+        if os.path.exists(self.integration_stage):
+            os.remove(self.integration_stage)
+
+    def test_main_missing_arguments(self):
+        sys.argv = ["transform.py"]
+        
+        captured_stdout = StringIO()
+        saved_stdout = sys.stdout
+        
+        try:
+            sys.stdout = captured_stdout
+            with self.assertRaises(SystemExit) as context:
+                main()
+            self.assertEqual(context.exception.code, 1)
+            self.assertIn("Usage: python3 pipeline/transform.py", captured_stdout.getvalue())
+        finally:
+            sys.stdout = saved_stdout
+
+    def test_main_metrics_capture(self):
+        with open(self.integration_stage, "w") as f:
+            f.write("@Patient01 Info\nAAAA\n+\nIIII\n@Patient02 Info\nTTTT\n+\nIIII\n")
+            
+        sys.argv = ["transform.py", self.integration_stage]
+        captured_stdout = StringIO()
+        saved_stdout = sys.stdout
+        
+        try:
+            sys.stdout = captured_stdout
+            main()
+            output = captured_stdout.getvalue()
+            self.assertIn("Total processed: 2", output)
+            self.assertIn("Quality Passed:  2", output)
+        finally:
+            sys.stdout = saved_stdout
+
+    def test_main_triggers_alert(self):
+        if not os.path.exists(self.real_biomarker_file) or os.path.getsize(self.real_biomarker_file) == 0:
+            self.skipTest("biomarkers.fasta empty or missing.")
+            
+        with open(self.real_biomarker_file, "r") as f:
+            lines = f.readlines()
+            real_motif = [line.strip() for line in lines if line.strip() and not line.startswith(">")][0]
+        with open(self.integration_stage, "w") as f:
+            f.write(f"@PatientTarget\n{real_motif}\n+\n" + ("I" * len(real_motif)) + "\n")
+
+        sys.argv = ["transform.py", self.integration_stage]
+        captured_stdout = StringIO()
+        saved_stdout = sys.stdout
+        
+        try:
+            sys.stdout = captured_stdout
+            main()
+            output = captured_stdout.getvalue()
+            self.assertIn("ALERT:", output)
+            self.assertIn("Patient ID: @PatientTarget", output)
+            self.assertIn("High-Risk Alerts: 1", output)
+        finally:
+            sys.stdout = saved_stdout
+
+    def test_main_corrupted_header(self):
+        if not os.path.exists(self.real_biomarker_file) or os.path.getsize(self.real_biomarker_file) == 0:
+            self.skipTest("biomarkers.fasta empty or missing.")
+            
+        with open(self.real_biomarker_file, "r") as f:
+            lines = f.readlines()
+            real_motif = [line.strip() for line in lines if line.strip() and not line.startswith(">")][0]
+        with open(self.integration_stage, "w") as f:
+            f.write(f"@Patient99_NoSpaces|Metadata_Details\n{real_motif}\n+\n" + ("I" * len(real_motif)) + "\n")
+
+        sys.argv = ["transform.py", self.integration_stage]
+        captured_stdout = StringIO()
+        saved_stdout = sys.stdout
+        
+        try:
+            sys.stdout = captured_stdout
+            main()
+            self.assertIn("Patient ID: @Patient99_NoSpaces|Metadata_Details", captured_stdout.getvalue())
+        finally:
+            sys.stdout = saved_stdout
+
+    def test_main_rejected_record(self):
+        with open(self.integration_stage, "w") as f:
+            f.write("@PatientLowQual\nATCG\n+\n!!!!\n")  
+
+        sys.argv = ["transform.py", self.integration_stage]
+        captured_stdout = StringIO()
+        saved_stdout = sys.stdout
+        
+        try:
+            sys.stdout = captured_stdout
+            main()
+            output = captured_stdout.getvalue()
+            self.assertIn("REJECTED due to low quality parameters.", output)
+            self.assertIn("Quality Passed:  0", output)
+        finally:
+            sys.stdout = saved_stdout
+
+    def test_main_empty_staging_file(self):
+        with open(self.integration_stage, "w") as f:
+            f.write("")
+
+        sys.argv = ["transform.py", self.integration_stage]
+        captured_stdout = StringIO()
+        saved_stdout = sys.stdout
+        
+        try:
+            sys.stdout = captured_stdout
+            main()
+            output = captured_stdout.getvalue()
+            self.assertIn("Total processed: 0", output)
+            self.assertIn("Quality Passed:  0", output)
+        finally:
+            sys.stdout = saved_stdout
 
 
 if __name__ == "__main__":
