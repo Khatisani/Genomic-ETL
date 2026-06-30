@@ -1,4 +1,12 @@
-@SRR1234567.1 1 length=4
-GATT
+@SEQ_ID_01_GOOD_READ Description="Pristine Sequence"
+GATTACA
 +
-BFFF
+BFFFIII
+@SEQ_ID_02_BAD_READ Description="Low Quality Sequence"
+ACTGATC
++
+!!!!###
+@SEQ_ID_03_NORMAL_READ Description="Standard Sequence"
+CCGGTT
++
+FFFIII
