@@ -3,6 +3,11 @@ import os
 import sys
 
 def parse_staged_records(staging_path):
+    
+    if not staging_path.lower().endswith('.tmp'):
+        print(f"Error: Invalid file format '{staging_path}'. Expected a staged '.tmp' file.")
+        sys.exit(1)
+
     if not os.path.exists(staging_path):
         print(f"Error: Staging file '{staging_path}' not found.")
         print("Make sure you are running from the project root or passing the correct path.")
