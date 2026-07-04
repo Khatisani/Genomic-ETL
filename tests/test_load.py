@@ -50,5 +50,35 @@ class TestLoadPipeline(unittest.TestCase):
         self.assertEqual(len(truncated), 2)
         self.assertEqual(truncated, [[1, 0, 0, 0], [0, 1, 0, 0]])
 
+    def test_pad_or_truncate_exact_match(self):
+        exact_vectors = [[1, 0, 0, 0], [0, 1, 0, 0]]
+        self.assertEqual(pad_or_truncate(exact_vectors, max_len=2), exact_vectors)
+
+    def test_pad_or_truncate_to_zero_length(self):
+        vectors = [[1, 0, 0, 0], [0, 1, 0, 0]]
+        self.assertEqual(pad_or_truncate(vectors, max_len=0), [])
+
+    def test_pad_or_truncate_empty_input_padding(self):
+        padded = pad_or_truncate([], max_len=2)
+        self.assertEqual(padded, [[0, 0, 0, 0], [0, 0, 0, 0]])
+
+    def test_pad_or_truncate_custom_fill_value(self):
+        short_qual_scores = [35, 40]
+        padded = pad_or_truncate(short_qual_scores, max_len=4, fill_value=[-1])
+        self.assertEqual(padded, [35, 40, [-1], [-1]])
+
+    def test_pad_or_truncate_large_truncation(self):
+        long_vectors = [[1], [2], [3], [4], [5]]
+        self.assertEqual(pad_or_truncate(long_vectors, max_len=1), [[1]])
+
+    def test_pad_or_truncate_negative_max_len(self):
+        vectors = [[1, 0, 0, 0]]
+        self.assertEqual(pad_or_truncate(vectors, max_len=-5), [])
+
+    def test_pad_or_truncate_fill_value_none_fallback(self):
+        short_vectors = [[1, 1, 1, 1]]
+        padded = pad_or_truncate(short_vectors, max_len=2, fill_value=None)
+        self.assertEqual(padded, [[1, 1, 1, 1], [0, 0, 0, 0]])
+
 if __name__ == "__main__":
     unittest.main()

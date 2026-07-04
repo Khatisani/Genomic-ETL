@@ -24,7 +24,7 @@ def pad_or_truncate(vector_list, max_len, fill_value=None):
 def main():
     if len(sys.argv) != 2:
         print("Usage: python3 pipeline/load.py <transformed_data_placeholder>")
-        sys.exit(1)
+        sys.exit(1)                   
 
     print("Executing Stage 3: Loading and vectorizing data for ML training...")
 
