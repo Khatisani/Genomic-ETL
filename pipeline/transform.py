@@ -69,6 +69,7 @@ def main():
         
     staging_file = sys.argv[1]
     biomarker_file = "data/biomarkers.fasta"
+    output_file = "data/filtered_stage.tmp" 
     print(f"Starting Stage 2 transformation on: {staging_file}")
     
     biomarkers = load_biomarkers(biomarker_file)
@@ -78,26 +79,29 @@ def main():
     total_records = 0
     flagged_records = 0
 
-    for header, seq, spacer, qual in parse_staged_records(staging_file):
-        total_records += 1
-        
-        numeric_scores = ascii_to_phred(qual)
-
-        if filter_low_quality(numeric_scores, threshold=20):
-            passed_records += 1
-            print(f"\nRecord {total_records} PASSED (Avg Q: {sum(numeric_scores)/len(numeric_scores):.1f})")
-            print(f"   Sequence: {seq}")
-        else:
-            print(f"\nRecord {total_records} REJECTED due to low quality parameters.")
+    with open(output_file, "w") as out_f:
+        for header, seq, spacer, qual in parse_staged_records(staging_file):
+            total_records += 1
             
-        matched_motif = contains_motif(seq, biomarkers)
-        if matched_motif:
-            flagged_records += 1
-            print(f"\n   ALERT: Record {total_records} PASSED Quality, but MATCHED biomarker!")
-            print(f"   Patient ID: {header.split()[0]}")
-            print(f"   Matched Sequence Window: {matched_motif[:15]}...")
-        else:
-            print(f"\nRecord {total_records}: Passed Quality and cleared of known risk variables.")
+            numeric_scores = ascii_to_phred(qual)
+
+            if filter_low_quality(numeric_scores, threshold=20):
+                passed_records += 1
+                print(f"\nRecord {total_records} PASSED (Avg Q: {sum(numeric_scores)/len(numeric_scores):.1f})")
+                print(f"   Sequence: {seq}")
+                
+                out_f.write(f"{header}\n{seq}\n{spacer}\n{qual}\n")
+            else:
+                print(f"\nRecord {total_records} REJECTED due to low quality parameters.")
+                
+            matched_motif = contains_motif(seq, biomarkers)
+            if matched_motif:
+                flagged_records += 1
+                print(f"\n   ALERT: Record {total_records} PASSED Quality, but MATCHED biomarker!")
+                print(f"   Patient ID: {header.split()[0]}")
+                print(f"   Matched Sequence Window: {matched_motif[:15]}...")
+            else:
+                print(f"\nRecord {total_records}: Passed Quality and cleared of known risk variables.")
             
 
     print(f"\nTransformation Phase Finished Summary:\n")
@@ -105,6 +109,7 @@ def main():
     print(f"  - Retained: {passed_records}/{total_records} high-quality sequences.")
     print(f"  - Quality Passed:  {passed_records}")
     print(f"  - High-Risk Alerts: {flagged_records}")
+    print(f"  - Filtered output saved to: {output_file}") 
 
 
 if __name__ == "__main__":

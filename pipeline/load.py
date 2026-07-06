@@ -1,5 +1,6 @@
 
 import sys
+from flask import json
 import numpy as np
 from pipeline.transform import parse_staged_records, ascii_to_phred, contains_motif, load_biomarkers
 
@@ -65,19 +66,39 @@ def main():
     biomarker_file = "data/biomarkers.fasta"
     output_features_path = "data/processed_features.npy"
     output_labels_path = "data/processed_labels.npy"
+    output_json_path = "data/processed_database.json"
     
     print(f"Executing Stage 3 Loader: Compiling tensors from {staging_file}...")
     
+    # 1. Compile high-performance ML tensor binary matrices
     X_seq, X_qual, y = compile_ml_dataset(staging_file, biomarker_file, max_len=100)
-
     np.save(output_features_path, {"sequences": X_seq, "qualities": X_qual})
     np.save(output_labels_path, y)
+    
+    # 2. Build the human-readable Plain English JSON database backup for presentation
+    biomarkers = load_biomarkers(biomarker_file)
+    demo_database_records = []
+    
+    for header, seq, spacer, qual in parse_staged_records(staging_file):
+        has_risk = contains_motif(seq, biomarkers)
+        
+        record = {
+            "patient_id": header.lstrip("@").strip(),
+            "sequence_string": seq.strip(),
+            "biomarker_risk_detected": "POSITIVE" if has_risk else "NEGATIVE",
+            "quality_score_average": float(np.mean(ascii_to_phred(qual))) if qual else 0.0
+        }
+        demo_database_records.append(record)
+        
+    with open(output_json_path, "w") as json_file:
+        json.dump(demo_database_records, json_file, indent=4)
     
     print("\n📦 Loading and Vectorization Summary:")
     print(f"  - Features Shape (Sequences): {X_seq.shape}")
     print(f"  - Features Shape (Qualities): {X_qual.shape}")
     print(f"  - Labels Shape:               {y.shape}")
-    print(f"Successfully exported data matrices to {output_features_path} and {output_labels_path}!")
+    print(f"  - Plain English DB Backup:    {output_json_path} (Saved {len(demo_database_records)} records)")
+    print(f"Successfully exported all data assets!")
 
 
 if __name__ == "__main__":

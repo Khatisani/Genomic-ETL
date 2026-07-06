@@ -10,7 +10,8 @@ def main():
         
     input_file = sys.argv[1]
     
-    staging_file= "data/extracted_stage.tmp"
+    staging_file = "data/extracted_stage.tmp"
+    filtered_file = "data/filtered_stage.tmp"
 
     print("\n==================================================")
     print("🧬 Starting Genomic-ETL Pipeline Engine 🧬")
@@ -51,21 +52,22 @@ def main():
     print("\n---------------Stage 2 complete.------------------\n")
 
 # --------------------------------------------------
-# STAGE 3: 
+# STAGE 3: LOADING & VECTORIZATION
 # --------------------------------------------------
 
     print("\n--------------------------------------------------")
     print("[STAGE 3] Running Loading Engine...")
     print("--------------------------------------------------\n")
 
-    # load_process = subprocess.run(
-    #     ["python3", "pipeline/load.py", staging_file],
-    #     capture_output=False
-    # )
+    # Now passing the correctly defined filtered_file string
+    load_process = subprocess.run(
+        ["python3", "-m", "pipeline.load", filtered_file], 
+        capture_output=False
+    )
 
-    # if load_process.returncode != 0:
-    #     print("\nPipeline aborted: Stage 3 Loading failed.")
-    #     sys.exit(load_process.returncode)
+    if load_process.returncode != 0:
+        print("\nPipeline aborted: Stage 3 Loading failed.")
+        sys.exit(load_process.returncode)
 
     print("\n---------------Stage 3 complete.------------------\n")
 
