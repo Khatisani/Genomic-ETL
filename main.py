@@ -10,8 +10,8 @@ def main():
         
     input_file = sys.argv[1]
     
-    staging_file = "data/extracted_stage.tmp"
-    filtered_file = "data/filtered_stage.tmp"
+    staging_file = "outputs/extracted_stage.tmp"
+    filtered_file = "outputs/filtered_stage.tmp"
 
     print("\n==================================================")
     print("🧬 Starting Genomic-ETL Pipeline Engine 🧬")
@@ -59,7 +59,6 @@ def main():
     print("[STAGE 3] Running Loading Engine...")
     print("--------------------------------------------------\n")
 
-    # Now passing the correctly defined filtered_file string
     load_process = subprocess.run(
         ["python3", "-m", "pipeline.load", filtered_file], 
         capture_output=False

@@ -103,7 +103,7 @@ class TestExtraction(unittest.TestCase):
 
     def test_main_extraction_success(self):
         actual_input = "data/example.fastq"
-        expected_output = "data/extracted_stage.tmp"
+        expected_output = "outputs/extracted_stage.tmp"
         
         if os.path.exists(expected_output):
             os.remove(expected_output)

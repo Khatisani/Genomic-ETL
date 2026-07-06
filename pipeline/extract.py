@@ -38,7 +38,7 @@ def main():
         sys.exit(1)
         
     input_file = sys.argv[1]
-    output_staging_file = "data/extracted_stage.tmp"
+    output_staging_file = "outputs/extracted_stage.tmp"
     
     check_validity(input_file)
     validate_fastq_structure(input_file)
@@ -46,7 +46,7 @@ def main():
     print(f"File check passed for: {input_file}")
     print("Extracting raw sequences...")
     
-    os.makedirs("data", exist_ok=True)
+    os.makedirs("outputs", exist_ok=True)
     
     total_records = 0
     

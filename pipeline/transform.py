@@ -69,7 +69,7 @@ def main():
         
     staging_file = sys.argv[1]
     biomarker_file = "data/biomarkers.fasta"
-    output_file = "data/filtered_stage.tmp" 
+    output_file = "outputs/filtered_stage.tmp" 
     print(f"Starting Stage 2 transformation on: {staging_file}")
     
     biomarkers = load_biomarkers(biomarker_file)

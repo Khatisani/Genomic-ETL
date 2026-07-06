@@ -87,10 +87,10 @@ class TestLoadPipeline(unittest.TestCase):
 class TestLoadIntegration(unittest.TestCase):
 
     def setUp(self):
-        self.test_stage = "data/load_test_stage.tmp"
+        self.test_stage = "outputs/load_test_stage.tmp"
         self.test_biomarkers = "data/load_test_biomarkers.fasta"
-        self.output_features = "data/processed_features.npy"
-        self.output_labels = "data/processed_labels.npy"
+        self.output_features = "outputs/processed_features.npy"
+        self.output_labels = "outputs/processed_labels.npy"
         self.saved_argv = sys.argv[:]
         
         os.makedirs("data", exist_ok=True)

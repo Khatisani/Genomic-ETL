@@ -1,0 +1,14 @@
+[
+    {
+        "patient_id": "PatientA",
+        "sequence_string": "ATCG",
+        "biomarker_risk_detected": "NEGATIVE",
+        "quality_score_average": 40.0
+    },
+    {
+        "patient_id": "PatientB",
+        "sequence_string": "GGCC",
+        "biomarker_risk_detected": "NEGATIVE",
+        "quality_score_average": 0.0
+    }
+]

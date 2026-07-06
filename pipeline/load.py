@@ -64,18 +64,16 @@ def main():
         
     staging_file = sys.argv[1]
     biomarker_file = "data/biomarkers.fasta"
-    output_features_path = "data/processed_features.npy"
-    output_labels_path = "data/processed_labels.npy"
-    output_json_path = "data/processed_database.json"
+    output_features_path = "outputs/processed_features.npy"
+    output_labels_path = "outputs/processed_labels.npy"
+    output_json_path = "outputs/processed_database.json"
     
     print(f"Executing Stage 3 Loader: Compiling tensors from {staging_file}...")
     
-    # 1. Compile high-performance ML tensor binary matrices
     X_seq, X_qual, y = compile_ml_dataset(staging_file, biomarker_file, max_len=100)
     np.save(output_features_path, {"sequences": X_seq, "qualities": X_qual})
     np.save(output_labels_path, y)
-    
-    # 2. Build the human-readable Plain English JSON database backup for presentation
+
     biomarkers = load_biomarkers(biomarker_file)
     demo_database_records = []
     
