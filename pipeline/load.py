@@ -1,5 +1,6 @@
 
 import sys
+import os
 from flask import json
 import numpy as np
 from pipeline.transform import parse_staged_records, ascii_to_phred, contains_motif, load_biomarkers
@@ -64,16 +65,42 @@ def main():
         
     staging_file = sys.argv[1]
     biomarker_file = "data/biomarkers.fasta"
+    
+    # Core Production Binary Targets
     output_features_path = "outputs/processed_features.npy"
     output_labels_path = "outputs/processed_labels.npy"
-    output_json_path = "outputs/processed_database.json"
+    
+    # Demo/Presentation JSON Targets
+    output_db_json = "outputs/processed_database.json"
+    output_features_json = "outputs/processed_features.json"
+    output_labels_json = "outputs/processed_labels.json"
+    
+    os.makedirs("outputs", exist_ok=True)
     
     print(f"Executing Stage 3 Loader: Compiling tensors from {staging_file}...")
     
+    # 1. Compile high-performance ML tensor binary matrices
     X_seq, X_qual, y = compile_ml_dataset(staging_file, biomarker_file, max_len=100)
     np.save(output_features_path, {"sequences": X_seq, "qualities": X_qual})
     np.save(output_labels_path, y)
+    
+    # ==========================================
+    # DEMO EXPORTERS: Plain-Text JSON Files
+    # ==========================================
+    
+    # A. Save the Features Matrix as a JSON (converting numpy arrays to standard nested python lists)
+    features_json_payload = {
+        "sequences_one_hot_tensors": X_seq.tolist(),
+        "qualities_phred_tensors": X_qual.tolist()
+    }
+    with open(output_features_json, "w") as fj:
+        json.dump(features_json_payload, fj, indent=2) # Using 2 spaces to keep it clean but compact
+        
+    # B. Save the Labels Column as a plain JSON array
+    with open(output_labels_json, "w") as lj:
+        json.dump(y.tolist(), lj, indent=2)
 
+    # C. Build the human-readable Master Plain English database record log
     biomarkers = load_biomarkers(biomarker_file)
     demo_database_records = []
     
@@ -88,15 +115,18 @@ def main():
         }
         demo_database_records.append(record)
         
-    with open(output_json_path, "w") as json_file:
+    with open(output_db_json, "w") as json_file:
         json.dump(demo_database_records, json_file, indent=4)
     
     print("\n📦 Loading and Vectorization Summary:")
     print(f"  - Features Shape (Sequences): {X_seq.shape}")
     print(f"  - Features Shape (Qualities): {X_qual.shape}")
     print(f"  - Labels Shape:               {y.shape}")
-    print(f"  - Plain English DB Backup:    {output_json_path} (Saved {len(demo_database_records)} records)")
-    print(f"Successfully exported all data assets!")
+    print(f"\n✨ Demo Presentation Files Generated inside 'outputs/':")
+    print(f"  - {output_features_json} (Raw Numbers / One-Hot Tensors)")
+    print(f"  - {output_labels_json} (Target 1s and 0s)")
+    print(f"  - {output_db_json} (Patient History Logs)")
+    print("Successfully exported all production and presentation data assets!")
 
 
 if __name__ == "__main__":

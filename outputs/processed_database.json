@@ -1,14 +1,14 @@
 [
     {
-        "patient_id": "PatientA",
-        "sequence_string": "ATCG",
-        "biomarker_risk_detected": "NEGATIVE",
-        "quality_score_average": 40.0
+        "patient_id": "PATIENT_01_RISK_MATCH Description= \"Patient carries gene.\"",
+        "sequence_string": "GCTAGCTAGCATGATTACATAACCGGTTTAAAGATCGGCACATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATC",
+        "biomarker_risk_detected": "POSITIVE",
+        "quality_score_average": 39.84
     },
     {
-        "patient_id": "PatientB",
-        "sequence_string": "GGCC",
+        "patient_id": "PATIENT_03_SAFE_READ Description=\"High quality sequence, but safe (no risk motifs)\"",
+        "sequence_string": "GCTAGCTAGCCCCGGTTTAAATTTTTCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATC",
         "biomarker_risk_detected": "NEGATIVE",
-        "quality_score_average": 0.0
+        "quality_score_average": 39.91
     }
 ]

@@ -111,6 +111,5 @@ def main():
     print(f"  - High-Risk Alerts: {flagged_records}")
     print(f"  - Filtered output saved to: {output_file}") 
 
-
 if __name__ == "__main__":
     main()
