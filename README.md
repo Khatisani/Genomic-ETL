@@ -118,4 +118,4 @@ Real-World Benchmark Data (data/sample1.fastq): Obtained directly from the open-
 3. Replace simple print statements with logging to track pipeline steps
 4. How to handle big files?
 
-5. 
+5. Should I automate so it runs as soon as a file is uploaded?
