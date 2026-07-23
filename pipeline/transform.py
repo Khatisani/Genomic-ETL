@@ -1,8 +1,34 @@
+"""
+Genomic Data Transformation (`transform.py`).
+
+Applies quality control (QC) filtering and motif scanning to staged FASTQ records.
+
+This module converts ASCII quality scores to standard Phred scale integers (Phred+33),
+filters sequences failing mean quality thresholds (Q20 standard), and scans passing
+reads against target pharmacogenomic/biomarker motifs loaded from FASTA reference files.
+"""
 
 import os
 import sys
 
 def parse_staged_records(staging_path):
+    """
+    Streams 4-line FASTQ record tuples from a temporary staging file.
+    Reads the raw staging file line-by-line.
+
+    Args:
+        staging_path (str): Path to the `.tmp` staging file.
+
+    Yields:
+        Generator[Tuple[str, str, str, str], None, None]: A tuple containing the 4 record fields:
+            - header (str): Sequence header line (starts with '@').
+            - sequence (str): Raw nucleotide base string.
+            - spacer (str): Record separator line (starts with '+').
+            - quality (str): ASCII Phred quality score string.
+
+    Raises:
+        SystemExit: If the file lacks a `.tmp` extension or does not exist. 
+    """
 
     if not staging_path.lower().endswith('.tmp'):
         print(f"Error: Invalid file format '{staging_path}'. Expected a staged '.tmp' file.")
@@ -26,6 +52,21 @@ def parse_staged_records(staging_path):
             yield (line1.strip(), line2.strip(), line3.strip(), line4.strip())
 
 def ascii_to_phred(quality_string):
+    """
+    Converts a standard Sanger ASCII quality string to Phred integer quality scores (Phred+33).
+
+    Calculates error probability scores by shifting ASCII character ordinals by -33 offset.
+
+    Args:
+        quality_string (str): ASCII representation of read quality scores.
+
+    Returns:
+        List[int]: A list of integer Phred quality scores corresponding to each base call.
+
+    Raises:
+        ValueError: If an illegal ASCII character yields a Phred score below 0.
+    """
+    
     scores = []
     for char in quality_string:
         score = ord(char) - 33
@@ -35,6 +76,19 @@ def ascii_to_phred(quality_string):
     return scores
 
 def filter_low_quality(phred_scores, threshold=20):
+    """
+    Evaluates whether a read passes a mean Phred quality score threshold.
+
+    Default threshold of Q20 corresponds to a 99% accuracy rate across the read.
+
+    Args:
+        phred_scores (List[int]): List of integer Phred quality scores for a read sequence.
+        threshold (float, optional): Minimum required mean Phred score. Defaults to 20.0.
+
+    Returns:
+        bool: True if the read's average Phred score meets or exceeds the threshold; False otherwise.
+    """
+    
     if not phred_scores:
         return False
         
@@ -42,6 +96,19 @@ def filter_low_quality(phred_scores, threshold=20):
     return average_score >= threshold
 
 def load_biomarkers(fasta_path):
+    """
+    Parses target biological sequence motifs from a reference FASTA file.
+
+    Extracts non-header sequence lines and normalizes base strings to uppercase.
+
+    Args:
+        fasta_path (str): Path to the target reference FASTA file containing risk motifs.
+
+    Returns:
+        List[str]: A list of uppercase target nucleotide sequence motifs. Returns an empty
+            list if the file does not exist.
+    """
+    
     motifs = []
     if not os.path.exists(fasta_path):
         return motifs
@@ -55,6 +122,19 @@ def load_biomarkers(fasta_path):
 
 
 def contains_motif(sequence, biomarkers):
+    """
+    Scans a nucleotide sequence for the presence of target biological motifs.
+
+    Performs substring searching against a provided reference set.
+
+    Args:
+        sequence (str): Target DNA sequence to scan.
+        biomarkers (List[str]): List of reference motif sequences to detect.
+
+    Returns:
+        Optional[str]: The first matched biomarker sequence string, or None if no match is found.
+    """
+    
     seq_upper = sequence.upper()
     for motif in biomarkers:
         if motif in seq_upper:
@@ -63,6 +143,10 @@ def contains_motif(sequence, biomarkers):
 
 
 def main():
+    """
+    CLI Entry point for running Stage 2 Quality Control and Biomarker Scanning.
+    """
+    
     if len(sys.argv) != 2:
         print("Usage: python3 pipeline/transform.py <staging_file.tmp>")
         sys.exit(1)
