@@ -1,3 +1,15 @@
+"""
+Genomic Data Loading and Vectorization (`load.py`).
+
+Transforms filtered genomic records into machine-learning-ready numerical tensors
+and exports JSON files for downstream storage and demo purposes.
+
+Outputs generated:
+1. One-hot encoded nucleotide tensors (A, C, G, T -> 4D vectors).
+2. Numerical Phred quality score matrices.
+3. Binary biomarker risk target labels (1 = positive motif match, 0 = negative).
+4. Patient-level database records exported in JSON format.
+"""
 
 import sys
 import os
@@ -5,8 +17,24 @@ from flask import json
 import numpy as np
 from pipeline.transform import parse_staged_records, ascii_to_phred, contains_motif, load_biomarkers
 
-
 def one_hot_encode_seq(sequence):
+    """
+    Converts a raw DNA sequence string into a list of 4-element one-hot binary vectors.
+
+    Base mapping:
+        - 'A': [1, 0, 0, 0]
+        - 'C': [0, 1, 0, 0]
+        - 'G': [0, 0, 1, 0]
+        - 'T': [0, 0, 0, 1]
+        - Ambiguous/Unknown ('N', etc.): [0, 0, 0, 0]
+
+    Args:
+        sequence (str): Target nucleotide base sequence (case-insensitive).
+
+    Returns:
+        List[List[int]]: A list of 4-element binary lists representing one-hot encoded bases.
+    """
+    
     mapping = {
         'A': [1, 0, 0, 0],
         'C': [0, 1, 0, 0],
@@ -16,6 +44,20 @@ def one_hot_encode_seq(sequence):
     return [mapping.get(base, [0, 0, 0, 0]) for base in sequence.upper()]
 
 def pad_or_truncate(vector_list, max_len, fill_value=None):
+    """
+    Standardizes sequence feature representations to a fixed uniform length.
+
+    Truncates vectors exceeding `max_len` or pads shorter vectors using `fill_value`.
+
+    Args:
+        vector_list (List[Any]): Input list of feature vectors or scalar values.
+        max_len (int): Maximum target sequence length constraint.
+        fill_value (Optional[Any], optional): Default padding element. Defaults to [0, 0, 0, 0].
+
+    Returns:
+        List[Any]: Fixed-length vector padded or truncated to `max_len`.
+    """
+    
     if fill_value is None:
         fill_value = [0, 0, 0, 0] 
         
@@ -26,6 +68,23 @@ def pad_or_truncate(vector_list, max_len, fill_value=None):
     return vector_list + [fill_value] * padding_needed
 
 def compile_ml_dataset(staging_path, biomarker_path, max_len=100):
+    """
+    Compiles staged FASTQ records into structured multi-dimensional NumPy feature arrays.
+
+    Extracts one-hot encoded base arrays, Phred quality arrays, and binary biomarker labels.
+
+    Args:
+        staging_path (str): Path to filtered temporary staging file (`.tmp`).
+        biomarker_path (str): Path to FASTA reference file containing risk motifs.
+        max_len (int, optional): Fixed sequence length for array padding/truncation. Defaults to 100.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]:
+            - X_seq (np.ndarray): One-hot sequence tensor of shape `(N, max_len, 4)` and dtype `float32`.
+            - X_qual (np.ndarray): Phred quality score tensor of shape `(N, max_len)` and dtype `float32`.
+            - y (np.ndarray): Binary target label matrix of shape `(N, 1)` and dtype `int32`.
+    """
+    
     biomarkers = load_biomarkers(biomarker_path)
     
     sequences_accumulator = []
@@ -59,6 +118,10 @@ def compile_ml_dataset(staging_path, biomarker_path, max_len=100):
     )
 
 def main():
+    """
+    CLI Entry point for Stage 3 Loader and Tensor export.
+    """
+    
     if len(sys.argv) != 2:
         print("Usage: python3 pipeline/load.py <transformed_stage.tmp>")
         sys.exit(1)
