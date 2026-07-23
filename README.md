@@ -1,19 +1,61 @@
 # Genomic-ETL
 
-Genomic-ETL is a small ETL-style pipeline for processing genomic FASTQ data. The current focus is on building a reliable first stage that validates FASTQ files, checks basic structure, and stages raw records for downstream transformation and machine learning workflows.
+Genomic-ETL is a small, end-to-end Python data pipeline built to ingest raw DNA sequencing files, apply quality control (QC) filtering, screen for high-risk pharmacogenomic biomarkers, and convert biological sequence data into machine-learning-ready tensors and clinical JSON database records.
 
-The project is still evolving, but it already includes a working validation and extraction flow, a prototype transformation module, and unit tests for the ingestion logic.
 
-## What the project does
+## The Clinical Scenario: Compound-K 
 
-At the moment, the pipeline supports:
+​Compound-K is a hypothetical psychiatric drug developed for treatment resistant clinical depression. During Phase III clinical trials, researchers identified specific pharmacogenomic biomarkers—short DNA sequence motifs—strongly correlated with severe adverse drug reactions (ADRs), such as neurotoxicity and acute liver injury.
 
-- validating that a file exists and uses a FASTQ-compatible extension
-- checking basic FASTQ structure such as header, separator, and quality line format
-- extracting raw records into a staging file for later processing
-- testing the extraction and validation behavior with unit tests
+​These high-risk risk sequences were cataloged and stored in data/biomarkers.fasta.
 
-## Current project structure
+When a patient is prescribed Compound-K, their whole genome or target gene panel is sequenced. (Note: Epigenetic modifications such as DNA methylation are outside the scope of this pipeline).
+
+​The goal of this ETL pipeline is to automatically process patient sequencing files, filter out sequencing noise, flag patients carrying risk motifs, and format the data for downstream clinical databases and predictive ML models.
+
+## Why We Need an ETL Pipeline
+
+​DNA sequencers do not output neat, structured patient tables. Instead, they output massive, messy FASTQ files filled with raw text records.
+
+Every sequencing read consists of a strict 4-line block:
+
+​Header (@): Sequence identifier and machine metadata. ​
+Nucleotide Sequence: The raw base calls (A, C, G, T, or N for unknown). ​
+Separator (+): Marker line separating sequence from quality scores. 
+​Phred Quality String: ASCII characters encoding the machine's confidence in each base call. 
+
+### The Challenges:
+
+​Sequencer Noise: Sequencers make mistakes. Low-quality base calls (low Phred scores) can look like false-positive risk mutations.
+​Format Corruption: Corrupted headers or mismatched sequence/quality string lengths will break downstream analysis.
+​Unusable Raw Format: Machine learning models cannot process ASCII quality strings like 3IIIIIIIFF9BG or raw text sequences directly—they require standardized numerical tensors.
+
+## Pipeline Architecture
+
+​This project breaks the data processing down into three modular stages: Extract, Transform, and Load.
+
+  +-------------------+
+  | Raw FASTQ File    |
+  +---------+---------+
+            |
+            v
+  +-------------------+
+  | 1. EXTRACT        | --> File Validation & 4-Line Integrity Check
+  +---------+---------+
+            | (Staged .tmp)
+            v
+  +-------------------+
+  | 2. TRANSFORM      | --> ASCII -> Phred+33 conversion, Q20 QC Filter,
+  +---------+---------+     and FASTQ Motif Scanning against biomarkers.fasta
+            | (Filtered .tmp)
+            v
+  +-------------------+
+  | 3. LOAD           | --> One-Hot Base Encoding, Sequence Padding/Truncation,
+  +---------+---------+     Tensor Compilation (.npy) & Clinical DB Export (.json)
+
+
+
+## Project Structure
 
 ```text
 Genomic-ETL/
@@ -21,50 +63,47 @@ Genomic-ETL/
 │   ├── biomarkers.fasta         # HYPOTHETICAL: Mock sequence data for prototype testing
 │   ├── example.fastq            # HYPOTHETICAL: Local structure validation file
 │   ├── multi_seq.fastq          # HYPOTHETICAL: Multi-record mock dataset
-│   ├── sample1.fastq            # REAL: Authentic data from Galaxy Project Repository
-│   └── extracted_stage.tmp      # STAGED: Extracted raw valid records cache
+│   └── sample1.fastq            # REAL: Authentic data from Galaxy Project Repository
+│ 
+├── pipeline/
+│   ├── extract.py               # Stage 1: Ingestion & Validation Engine
+│   ├── transform.py             # Stage 2: Q20 QC & Biomarker Motif Scanner
+│   └── load.py                  # Stage 3: Tensor Vectorization & JSON Exporter
+│
 ├── tests/
-│   └── test_extract.py          # Extraction test suite
-├── extract.py                   # Stage 1: Ingestion & Validation Engine
-├── transform.py
-├── main.py                      # Master Pipeline Orchestrator (Functional Draft)
+│   ├── test_extract.py          # Extraction test suite
+│   ├── test_transform.py        # Transformation test suite
+│   └── test_load.py             # Load test suite
+│
+├── main.py                      # Master Pipeline Orchestrator
 └── README.md                    # Project Documentation
 ```
 
-## Current implementation status
-
-The repository currently has:
-
-- Stage 1: Extraction and validation implemented in pipeline/extract.py
-- Stage 2: A transformation prototype implemented in pipeline/transform.py
-- Stage 3: Loading and final output generation are still pending
-
-The main entry point in main.py is a draft orchestrator. It is intended to coordinate the pipeline stages, but the full end-to-end workflow is not yet fully connected.
-
 ## How to run the current pipeline
 
-Run the extraction workflow directly:
+### Run the pipeline directly:
 
 ```bash
-python3 -m pipeline.extract data/example.fastq
+python3 main.py data/example.fastq 
 ```
 
-This will validate the file and create a staged output at data/extracted_stage.tmp.
+### Run the pipeline sequentially from the root directory:
+#### Stage 1: Validate and stage raw FASTQ data
+python3 pipeline.extract data/sample_patient.fastq
 
-You can also try the draft orchestrator:
+#### Stage 2: Perform Quality Control and scan for Compound-K risk biomarkers
+python3 pipeline.transform outputs/extracted_stage.tmp
 
-```bash
-python3 main.py data/example.fastq data/output.npy
-```
+#### Stage 3: Compile numerical tensors and export JSON assets
+python3 pipeline.load outputs/filtered_stage.tmp
 
-> Note: The current version of the orchestrator runs the extraction stage as part of its flow, but the final .npy output generation is still a work in progress.
 
 ## Running tests
 
 To run the test suite:
 
 ```bash
-python3 -m unittest tests/test_extract.py
+python3 -m unittest tests
 ```
 
 ## Data Origin
@@ -74,9 +113,3 @@ Real-World Benchmark Data (data/sample1.fastq): Obtained directly from the open-
 
 ## Future direction
 
-Planned development includes:
-
-- integrating the transformation logic into the main pipeline flow
-- generating a final numerical feature matrix from FASTQ sequences
-- adding a proper loading stage for model-ready outputs
-- expanding test coverage for transformation and orchestration
