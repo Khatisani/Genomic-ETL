@@ -34,6 +34,7 @@ Separator (+): Marker line separating sequence from quality scores.
 
 ​This project breaks the data processing down into three modular stages: Extract, Transform, and Load.
 
+```
   +-------------------+
   | Raw FASTQ File    |
   +---------+---------+
@@ -53,7 +54,7 @@ Separator (+): Marker line separating sequence from quality scores.
   | 3. LOAD           | --> One-Hot Base Encoding, Sequence Padding/Truncation,
   +---------+---------+     Tensor Compilation (.npy) & Clinical DB Export (.json)
 
-
+```
 
 ## Project Structure
 
@@ -89,13 +90,13 @@ python3 main.py data/example.fastq
 
 ### Run the pipeline sequentially from the root directory:
 #### Stage 1: Validate and stage raw FASTQ data
-python3 pipeline.extract data/sample_patient.fastq
+```python3 pipeline.extract data/sample_patient.fastq```
 
 #### Stage 2: Perform Quality Control and scan for Compound-K risk biomarkers
-python3 pipeline.transform outputs/extracted_stage.tmp
+```python3 pipeline.transform outputs/extracted_stage.tmp```
 
 #### Stage 3: Compile numerical tensors and export JSON assets
-python3 pipeline.load outputs/filtered_stage.tmp
+```python3 pipeline.load outputs/filtered_stage.tmp```
 
 
 ## Running tests
