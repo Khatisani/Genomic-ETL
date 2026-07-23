@@ -66,11 +66,9 @@ def main():
     staging_file = sys.argv[1]
     biomarker_file = "data/biomarkers.fasta"
     
-    # Core Production Binary Targets
     output_features_path = "outputs/processed_features.npy"
     output_labels_path = "outputs/processed_labels.npy"
     
-    # Demo/Presentation JSON Targets
     output_db_json = "outputs/processed_database.json"
     output_features_json = "outputs/processed_features.json"
     output_labels_json = "outputs/processed_labels.json"
@@ -79,28 +77,19 @@ def main():
     
     print(f"Executing Stage 3 Loader: Compiling tensors from {staging_file}...")
     
-    # 1. Compile high-performance ML tensor binary matrices
     X_seq, X_qual, y = compile_ml_dataset(staging_file, biomarker_file, max_len=100)
     np.save(output_features_path, {"sequences": X_seq, "qualities": X_qual})
     np.save(output_labels_path, y)
     
-    # ==========================================
-    # DEMO EXPORTERS: Plain-Text JSON Files
-    # ==========================================
-    
-    # A. Save the Features Matrix as a JSON (converting numpy arrays to standard nested python lists)
     features_json_payload = {
         "sequences_one_hot_tensors": X_seq.tolist(),
         "qualities_phred_tensors": X_qual.tolist()
     }
     with open(output_features_json, "w") as fj:
-        json.dump(features_json_payload, fj, indent=2) # Using 2 spaces to keep it clean but compact
-        
-    # B. Save the Labels Column as a plain JSON array
+        json.dump(features_json_payload, fj, indent=2) 
     with open(output_labels_json, "w") as lj:
         json.dump(y.tolist(), lj, indent=2)
 
-    # C. Build the human-readable Master Plain English database record log
     biomarkers = load_biomarkers(biomarker_file)
     demo_database_records = []
     
@@ -118,11 +107,11 @@ def main():
     with open(output_db_json, "w") as json_file:
         json.dump(demo_database_records, json_file, indent=4)
     
-    print("\n📦 Loading and Vectorization Summary:")
+    print("\nLoading and Vectorization Summary:")
     print(f"  - Features Shape (Sequences): {X_seq.shape}")
     print(f"  - Features Shape (Qualities): {X_qual.shape}")
     print(f"  - Labels Shape:               {y.shape}")
-    print(f"\n✨ Demo Presentation Files Generated inside 'outputs/':")
+    print(f"\n Demo Presentation Files Generated inside 'outputs/':")
     print(f"  - {output_features_json} (Raw Numbers / One-Hot Tensors)")
     print(f"  - {output_labels_json} (Target 1s and 0s)")
     print(f"  - {output_db_json} (Patient History Logs)")
