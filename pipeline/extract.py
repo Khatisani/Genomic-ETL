@@ -1,7 +1,27 @@
+"""
+Genomic Data Extraction (`extract.py`).
+
+Validates raw FASTQ/FQ sequencing files and stages them for downstream ETL processing.
+
+Checks file existence, file extension compatibility, and basic 4-line FASTQ structure integrity
+(header syntax, sequence-to-quality length parity) before executing a streaming write
+to a staging temporary file.
+"""
+
 import os
 import sys
 
 def check_validity(input_path):
+    """
+    Validates that the provided file path exists and carries a valid FASTQ extension.
+
+    Args:
+        input_path (str): The path to the target input file.
+
+    Raises:
+        SystemExit: If the file does not exist or does not end with '.fastq' or '.fq'.
+    """
+    
     if not os.path.exists(input_path):
         print(f"Error: The file '{input_path}' does not exist.")
         sys.exit(1)
@@ -11,6 +31,21 @@ def check_validity(input_path):
         sys.exit(1)
 
 def validate_fastq_structure(input_path):
+    """
+    Inspects the initial 4-line record block of a FASTQ file for structural integrity.
+
+    Verifies that the file is not empty, headers begin with expected FASTQ control characters
+    ('@' for header, '+' for separator), and that nucleotide sequence length matches the
+    corresponding Phred quality score string length.
+
+    Args:
+        input_path (str): Path to the target FASTQ file.
+
+    Raises:
+        SystemExit: If the file is empty, missing lines in the first 4-line record, or violates
+            standard FASTQ format specifications.
+    """
+    
     with open(input_path, 'r') as f:
         lines = [f.readline().strip() for _ in range(4)]
         
@@ -33,6 +68,10 @@ def validate_fastq_structure(input_path):
 
 
 def main():
+    """
+    CLI Entry point for extracting FASTQ records into the staging area.
+    """
+    
     if len(sys.argv) != 2:
         print("Usage: python3 extract.py <filename.fastq>")
         sys.exit(1)
