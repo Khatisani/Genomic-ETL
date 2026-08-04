@@ -13,7 +13,7 @@ Outputs generated:
 
 import sys
 import os
-from flask import json
+import json
 import numpy as np
 from pipeline.transform import parse_staged_records, ascii_to_phred, contains_motif, load_biomarkers
 
