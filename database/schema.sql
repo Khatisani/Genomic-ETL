@@ -23,6 +23,10 @@ CREATE TABLE IF NOT EXISTS biomarker_alerts (
 
 -- Table 4: Processed ML Features 
 CREATE TABLE IF NOT EXISTS ml_features (
+    feature_id INT PRIMARY KEY,
+    patient_id TEXT,
+    feature_shape TEXT,
+    label INT,
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
 );
 
