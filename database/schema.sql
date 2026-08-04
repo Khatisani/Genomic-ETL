@@ -6,6 +6,10 @@ CREATE TABLE IF NOT EXISTS patients (
 
 -- Table 2: Filtered sequences and Quality metrics
 CREATE TABLE IF NOT EXISTS genomic_sequences (
+    sequence_id INT PRIMARY KEY,
+    patient_id TEXT,
+    sequence_string TEXT,
+    avg_quality_score REAL,
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
 );
 
