@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS genomic_sequences (
 
 -- Table 3: Biomarker Detections
 CREATE TABLE IF NOT EXISTS biomarker_alerts (
+    alert_id INT PRIMARY KEY,
+    patient_id TEXT,
+    matched_window TEXT,
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
 );
 
