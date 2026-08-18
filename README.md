@@ -43,16 +43,16 @@ Separator (+): Marker line separating sequence from quality scores.
   +-------------------+
   | 1. EXTRACT        | --> File Validation & 4-Line Integrity Check
   +---------+---------+
-            | (Staged .tmp)
+            | (outputs/extracted_stage.tmp)
             v
   +-------------------+
   | 2. TRANSFORM      | --> ASCII -> Phred+33 conversion, Q20 QC Filter,
   +---------+---------+     and FASTQ Motif Scanning against biomarkers.fasta
-            | (Filtered .tmp)
+            | (outputs/filtered_stage.tmp)
             v
   +-------------------+
   | 3. LOAD           | --> One-Hot Base Encoding, Sequence Padding/Truncation,
-  +---------+---------+     Tensor Compilation (.npy) & Clinical DB Export (.json)
+  +---------+---------+     Tensor Compilation (.npy) & SQL Loading
 
 ```
 
@@ -65,18 +65,25 @@ Genomic-ETL/
 │   ├── example.fastq            # HYPOTHETICAL: Local structure validation file
 │   ├── multi_seq.fastq          # HYPOTHETICAL: Multi-record mock dataset
 │   └── sample1.fastq            # REAL: Authentic data from Galaxy Project Repository
-│ 
+│
+├── database/
+  └── schema.sql               # Relational schema DDL (SQLite)
+│
 ├── pipeline/
 │   ├── extract.py               # Stage 1: Ingestion & Validation Engine
 │   ├── transform.py             # Stage 2: Q20 QC & Biomarker Motif Scanner
 │   └── load.py                  # Stage 3: Tensor Vectorization & JSON Exporter
 │
+├── outputs/                     # Output directory for DB and staging files
+│
 ├── tests/
 │   ├── test_extract.py          # Extraction test suite
 │   ├── test_transform.py        # Transformation test suite
-│   └── test_load.py             # Load test suite
+│   ├── test_load.py             # Load test suite
+│   └── test_db.py               # Schema & database integrity test
 │
 ├── main.py                      # Master Pipeline Orchestrator
+│
 └── README.md                    # Project Documentation
 ```
 
@@ -95,9 +102,17 @@ python3 main.py data/example.fastq
 #### Stage 2: Perform Quality Control and scan for Compound-K risk biomarkers
 ```python3 pipeline.transform outputs/extracted_stage.tmp```
 
-#### Stage 3: Compile numerical tensors and export JSON assets
+#### Stage 3: Compile numerical tensors and export to sql db
 ```python3 pipeline.load outputs/filtered_stage.tmp```
 
+#### Inspect the SQLite Database
+```bash
+# View all filtered genomic sequences
+sqlite3 outputs/genomic_pipeline.db "SELECT * FROM genomic_sequences;"
+
+# View high-risk biomarker alerts
+sqlite3 outputs/genomic_pipeline.db "SELECT * FROM biomarker_alerts;"
+```
 
 ## Running tests
 
@@ -113,7 +128,6 @@ Hypothetical Data (biomarkers.fasta, example.fastq, multi_seq.fastq): Programmat
 Real-World Benchmark Data (data/sample1.fastq): Obtained directly from the open-source Galaxy Project Test Data Repository. This contains authentic sequencer outputs with real biological base calls and instrument quality scores, serving as our true production benchmark.
 
 ## Future directions
-1. Database integration (SQLite)
 2. Handle data integrity in schemas
 3. Replace simple print statements with logging to track pipeline steps
 4. How to handle big files?
