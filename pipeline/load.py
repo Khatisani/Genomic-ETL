@@ -14,6 +14,7 @@ Outputs generated:
 import sys
 import os
 import json
+import sqlite3
 import numpy as np
 from pipeline.transform import parse_staged_records, ascii_to_phred, contains_motif, load_biomarkers
 
@@ -118,69 +119,76 @@ def compile_ml_dataset(staging_path, biomarker_path, max_len=100):
     )
 
 def main():
-    """
-    CLI Entry point for Stage 3 Loader and Tensor export.
-    """
-    
+#     """
+#     CLI Entry point for Stage 3 Loader and Tensor export.
+#     """
     if len(sys.argv) != 2:
         print("Usage: python3 pipeline/load.py <transformed_stage.tmp>")
         sys.exit(1)
         
     staging_file = sys.argv[1]
     biomarker_file = "data/biomarkers.fasta"
-    
-    output_features_path = "outputs/processed_features.npy"
-    output_labels_path = "outputs/processed_labels.npy"
-    
-    output_db_json = "outputs/processed_database.json"
-    output_features_json = "outputs/processed_features.json"
-    output_labels_json = "outputs/processed_labels.json"
+    db_path = "outputs/genomic_pipeline.db"
     
     os.makedirs("outputs", exist_ok=True)
     
-    print(f"Executing Stage 3 Loader: Compiling tensors from {staging_file}...")
-    
-    X_seq, X_qual, y = compile_ml_dataset(staging_file, biomarker_file, max_len=100)
-    np.save(output_features_path, {"sequences": X_seq, "qualities": X_qual})
-    np.save(output_labels_path, y)
-    
-    features_json_payload = {
-        "sequences_one_hot_tensors": X_seq.tolist(),
-        "qualities_phred_tensors": X_qual.tolist()
-    }
-    with open(output_features_json, "w") as fj:
-        json.dump(features_json_payload, fj, indent=2) 
-    with open(output_labels_json, "w") as lj:
-        json.dump(y.tolist(), lj, indent=2)
+    print(f"Executing Stage 3 Loader: Writing records into SQLite database '{db_path}'...")
 
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA foreign_keys = ON;")
+    
+    with open("database/schema.sql", "r") as f:
+        schema_script = f.read()
+    cursor.executescript(schema_script)
+
+    X_seq, X_qual, y = compile_ml_dataset(staging_file, biomarker_file, max_len=100)
     biomarkers = load_biomarkers(biomarker_file)
-    demo_database_records = []
-    
-    for header, seq, spacer, qual in parse_staged_records(staging_file):
-        has_risk = contains_motif(seq, biomarkers)
+
+    record_count = 0
+    for idx, (header, seq, spacer, qual) in enumerate(parse_staged_records(staging_file)):
+        patient_id = header.split()[0].strip()
+        phred_scores = ascii_to_phred(qual)
+        avg_quality = float(np.mean(phred_scores)) if phred_scores else 0.0
         
-        record = {
-            "patient_id": header.lstrip("@").strip(),
-            "sequence_string": seq.strip(),
-            "biomarker_risk_detected": "POSITIVE" if has_risk else "NEGATIVE",
-            "quality_score_average": float(np.mean(ascii_to_phred(qual))) if qual else 0.0
-        }
-        demo_database_records.append(record)
-        
-    with open(output_db_json, "w") as json_file:
-        json.dump(demo_database_records, json_file, indent=4)
-    
-    print("\nLoading and Vectorization Summary:")
+        cursor.execute("INSERT OR IGNORE INTO patients (patient_id) VALUES (?)", (patient_id,))
+
+        record_count += 1
+        cursor.execute(
+            """
+            INSERT INTO genomic_sequences (sequence_id, patient_id, sequence_string, avg_quality_score)
+            VALUES (?, ?, ?, ?)
+            """,
+            (record_count, patient_id, seq.strip(), avg_quality)
+        )
+
+        matched_motif = contains_motif(seq, biomarkers)
+        if matched_motif:
+            cursor.execute(
+                """
+                INSERT INTO biomarker_alerts (alert_id, patient_id, matched_window)
+                VALUES (?, ?, ?)
+                """,
+                (record_count, patient_id, matched_motif)
+            )
+
+        cursor.execute(
+            """
+            INSERT INTO ml_features (feature_id, patient_id, feature_shape, label)
+            VALUES (?, ?, ?, ?)
+            """,
+            (record_count, patient_id, str(X_seq.shape), int(y[idx][0]))
+        )
+
+    conn.commit()
+    conn.close()
+
+    print(f"\nStage 3 Summary:")
+    print(f"  - Total SQL Records Loaded: {record_count}")
     print(f"  - Features Shape (Sequences): {X_seq.shape}")
     print(f"  - Features Shape (Qualities): {X_qual.shape}")
     print(f"  - Labels Shape:               {y.shape}")
-    print(f"\n Demo Presentation Files Generated inside 'outputs/':")
-    print(f"  - {output_features_json} (Raw Numbers / One-Hot Tensors)")
-    print(f"  - {output_labels_json} (Target 1s and 0s)")
-    print(f"  - {output_db_json} (Patient History Logs)")
-    print("Successfully exported all production and presentation data assets!")
-
+    print(f"\nDatabase successfully updated at '{db_path}'!")
 
 if __name__ == "__main__":
     main()
-
