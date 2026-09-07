@@ -119,9 +119,9 @@ def compile_ml_dataset(staging_path, biomarker_path, max_len=100):
     )
 
 def main():
-#     """
-#     CLI Entry point for Stage 3 Loader and Tensor export.
-#     """
+    """
+    CLI Entry point for Stage 3 Loader and Tensor export.
+    """
     if len(sys.argv) != 2:
         print("Usage: python3 pipeline/load.py <transformed_stage.tmp>")
         sys.exit(1)
@@ -146,21 +146,24 @@ def main():
     biomarkers = load_biomarkers(biomarker_file)
 
     record_count = 0
+
     for idx, (header, seq, spacer, qual) in enumerate(parse_staged_records(staging_file)):
         patient_id = header.split()[0].strip()
         phred_scores = ascii_to_phred(qual)
         avg_quality = float(np.mean(phred_scores)) if phred_scores else 0.0
+        clean_seq = seq.strip()
         
         cursor.execute("INSERT OR IGNORE INTO patients (patient_id) VALUES (?)", (patient_id,))
 
-        record_count += 1
         cursor.execute(
             """
             INSERT INTO genomic_sequences (sequence_id, patient_id, sequence_string, avg_quality_score)
             VALUES (?, ?, ?, ?)
             """,
-            (record_count, patient_id, seq.strip(), avg_quality)
+            (patient_id, clean_seq, len(clean_seq), avg_quality)
         )
+        sequence_id = cursor.lastrowid
+        record_count += 1
 
         matched_motif = contains_motif(seq, biomarkers)
         if matched_motif:
@@ -169,7 +172,7 @@ def main():
                 INSERT INTO biomarker_alerts (alert_id, patient_id, matched_window)
                 VALUES (?, ?, ?)
                 """,
-                (record_count, patient_id, matched_motif)
+                (sequence_id, patient_id, matched_motif)
             )
 
         cursor.execute(
@@ -177,7 +180,7 @@ def main():
             INSERT INTO ml_features (feature_id, patient_id, feature_shape, label)
             VALUES (?, ?, ?, ?)
             """,
-            (record_count, patient_id, str(X_seq.shape), int(y[idx][0]))
+            (sequence_id, patient_id, str(X_seq.shape), int(y[idx][0]))
         )
 
     conn.commit()
