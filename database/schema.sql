@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS genomic_sequences (
     patient_id TEXT NOT NULL,
     sequence_string TEXT NOT NULL,
     sequence_length INT NOT NULL,
-    vg_quality_score REAL NOT NULL CHECK (avg_quality_score >= 0.0),
+    avg_quality_score REAL NOT NULL CHECK (avg_quality_score >= 0.0),
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
 );
 
