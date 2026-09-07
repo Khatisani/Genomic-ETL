@@ -30,11 +30,14 @@ CREATE TABLE IF NOT EXISTS biomarker_alerts (
 
 -- Table 4: Processed ML Features 
 CREATE TABLE IF NOT EXISTS ml_features (
-    feature_id INT PRIMARY KEY,
-    patient_id TEXT,
-    feature_shape TEXT,
-    label INT,
-    FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+    feature_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sequence_id INTEGER NOT NULL UNIQUE,
+    patient_id TEXT NOT NULL,
+    feature_shape TEXT NOT NULL,
+    label INTEGER NOT NULL CHECK (label IN (0, 1)),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sequence_id) REFERENCES genomic_sequences(sequence_id) ON DELETE CASCADE,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
 );
 
 
