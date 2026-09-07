@@ -1,0 +1,11 @@
+2026-09-07 12:15:30 [ERROR] [stage1_extract]: Error: The file 'data/nonexistent.fastq' does not exist.
+2026-09-07 12:15:30 [ERROR] [stage1_extract]: Error: Invalid extension. 'data/example.txt' must be a .fastq or .fq file.
+2026-09-07 12:15:30 [ERROR] [stage1_extract]: Error: The provided FASTQ file is completely empty.
+2026-09-07 12:15:30 [INFO] [stage1_extract]: File check passed for: data/example.fastq
+2026-09-07 12:15:30 [INFO] [stage1_extract]: Extracting raw sequences...
+2026-09-07 12:15:30 [INFO] [stage1_extract]: Extraction Complete.
+2026-09-07 12:15:30 [INFO] [stage1_extract]: Staged 1 raw records in 'outputs/extracted_stage.tmp'
+2026-09-07 12:15:30 [ERROR] [stage1_extract]: Format Error: Sequence length (4) mismatch with Quality string length (3).
+2026-09-07 12:15:30 [ERROR] [stage1_extract]: Error: FASTQ file is malformed. Incomplete initial 4-line record block.
+2026-09-07 12:15:30 [ERROR] [stage1_extract]:  Format Error: Line 1 must begin with '@'. Found: 'S'
+2026-09-07 12:15:30 [ERROR] [stage1_extract]: Format Error: Line 3 must begin with '+'. Found: '='

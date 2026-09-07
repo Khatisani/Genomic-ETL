@@ -67,14 +67,18 @@ Genomic-ETL/
 │   └── sample1.fastq            # REAL: Authentic data from Galaxy Project Repository
 │
 ├── database/
-  └── schema.sql               # Relational schema DDL (SQLite)
+│   └── schema.sql               # Relational schema DDL (SQLite with PRAGMA foreign keys)
 │
 ├── pipeline/
+│   ├── __init__.py
+│   ├── logger.py                # Centralized pipeline logging module
 │   ├── extract.py               # Stage 1: Ingestion & Validation Engine
 │   ├── transform.py             # Stage 2: Q20 QC & Biomarker Motif Scanner
-│   └── load.py                  # Stage 3: Tensor Vectorization & JSON Exporter
+│   └── load.py                  # Stage 3: Tensor Vectorization & SQLite Relational Ingestion
 │
-├── outputs/                     # Output directory for DB and staging files
+├── outputs/                     # Output directory for DB, logs, and staging files
+│   ├── genomic_pipeline.db      # Production-grade SQLite relational database
+│   └── pipeline.log             # Timestamped pipeline audit logs
 │
 ├── tests/
 │   ├── test_extract.py          # Extraction test suite
@@ -83,8 +87,8 @@ Genomic-ETL/
 │   └── test_db.py               # Schema & database integrity test
 │
 ├── main.py                      # Master Pipeline Orchestrator
-│
 └── README.md                    # Project Documentation
+
 ```
 
 ## How to run the current pipeline
@@ -105,7 +109,16 @@ python3 main.py data/example.fastq
 #### Stage 3: Compile numerical tensors and export to sql db
 ```python3 pipeline.load outputs/filtered_stage.tmp```
 
-#### Inspect the SQLite Database
+## Observability and Logging 
+Pipeline operations, QC rejections, and biomarker detection events are recorded with level severities (INFO, WARNING, ERROR) to both the console and disk.
+
+Inspect the runtime audit trail:
+
+```bash
+tail -n 50 outputs/pipeline.log 
+```
+
+## Inspect the SQLite Database
 ```bash
 # View all filtered genomic sequences
 sqlite3 outputs/genomic_pipeline.db "SELECT * FROM genomic_sequences;"
@@ -121,14 +134,20 @@ To run the test suite:
 ```bash
 python3 -m unittest tests
 ```
+To run an individual test module:
 
+```bash
+python3 -m unittest tests/test_extract.py
+python3 -m unittest tests/test_transform.py
+python3 -m unittest tests/test_load.py
+python3 tests/test_db.py
+```
 ## Data Origin
 Hypothetical Data (biomarkers.fasta, example.fastq, multi_seq.fastq): Programmatically generated or manually structured mock files. They do not contain real biological samples; instead, they serve as stable local baselines to verify that our extraction logic catches structural edge cases and structural anomalies.
 
 Real-World Benchmark Data (data/sample1.fastq): Obtained directly from the open-source Galaxy Project Test Data Repository. This contains authentic sequencer outputs with real biological base calls and instrument quality scores, serving as our true production benchmark.
 
 ## Future directions
-3. Replace simple print statements with logging to track pipeline steps
 4. How to handle big files?
 
 5. Should I automate so it runs as soon as a file is uploaded?
