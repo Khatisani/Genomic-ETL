@@ -1,4 +1,6 @@
 
+PRAGMA foreign_keys = ON;
+
 -- Table 1: Patient Records
 CREATE TABLE IF NOT EXISTS patients (
     patient_id TEXT PRIMARY KEY,
@@ -17,10 +19,13 @@ CREATE TABLE IF NOT EXISTS genomic_sequences (
 
 -- Table 3: Biomarker Detections
 CREATE TABLE IF NOT EXISTS biomarker_alerts (
-    alert_id INT PRIMARY KEY,
-    patient_id TEXT,
-    matched_window TEXT,
-    FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+    alert_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sequence_id INTEGER NOT NULL,
+    patient_id TEXT NOT NULL,
+    matched_window TEXT NOT NULL,
+    flagged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sequence_id) REFERENCES genomic_sequences(sequence_id) ON DELETE CASCADE,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
 );
 
 -- Table 4: Processed ML Features 
