@@ -10,6 +10,9 @@ reads against target pharmacogenomic/biomarker motifs loaded from FASTA referenc
 
 import os
 import sys
+from pipeline.logger import get_logger
+
+logger = get_logger("stage2_transform")
 
 def parse_staged_records(staging_path):
     """
@@ -31,12 +34,12 @@ def parse_staged_records(staging_path):
     """
 
     if not staging_path.lower().endswith('.tmp'):
-        print(f"Error: Invalid file format '{staging_path}'. Expected a staged '.tmp' file.")
+        logger.error(f"Error: Invalid file format '{staging_path}'. Expected a staged '.tmp' file.")
         sys.exit(1)
 
     if not os.path.exists(staging_path):
-        print(f"Error: Staging file '{staging_path}' not found.")
-        print("Make sure you are running from the project root or passing the correct path.")
+        logger.error(f"Error: Staging file '{staging_path}' not found.")
+        logger.error("Make sure you are running from the project root or passing the correct path.")
         sys.exit(1)
         
     with open(staging_path, 'r') as f:
@@ -171,29 +174,29 @@ def main():
 
             if filter_low_quality(numeric_scores, threshold=20):
                 passed_records += 1
-                print(f"\nRecord {total_records} PASSED (Avg Q: {sum(numeric_scores)/len(numeric_scores):.1f})")
-                print(f"   Sequence: {seq}")
+                logger.info(f"\nRecord {total_records} PASSED (Avg Q: {sum(numeric_scores)/len(numeric_scores):.1f})")
+                logger.info(f"   Sequence: {seq}")
                 
                 out_f.write(f"{header}\n{seq}\n{spacer}\n{qual}\n")
             else:
-                print(f"\nRecord {total_records} REJECTED due to low quality parameters.")
+                logger.info(f"\nRecord {total_records} REJECTED due to low quality parameters.")
                 
             matched_motif = contains_motif(seq, biomarkers)
             if matched_motif:
                 flagged_records += 1
-                print(f"\n   ALERT: Record {total_records} PASSED Quality, but MATCHED biomarker!")
-                print(f"   Patient ID: {header.split()[0]}")
-                print(f"   Matched Sequence Window: {matched_motif[:15]}...")
+                logger.warning(f"\n   ALERT: Record {total_records} PASSED Quality, but MATCHED biomarker!")
+                logger.info(f"   Patient ID: {header.split()[0]}")
+                logger.info(f"   Matched Sequence Window: {matched_motif[:15]}...")
             else:
-                print(f"\nRecord {total_records}: Passed Quality and cleared of known risk variables.")
+                logger.info(f"\nRecord {total_records}: Passed Quality and cleared of known risk variables.")
             
 
-    print(f"\nTransformation Phase Finished Summary:\n")
-    print(f"  - Total processed: {total_records}")
-    print(f"  - Retained: {passed_records}/{total_records} high-quality sequences.")
-    print(f"  - Quality Passed:  {passed_records}")
-    print(f"  - High-Risk Alerts: {flagged_records}")
-    print(f"  - Filtered output saved to: {output_file}") 
+    logger.info(f"\nTransformation Phase Finished Summary:\n")
+    logger.info(f"  - Total processed: {total_records}")
+    logger.info(f"  - Retained: {passed_records}/{total_records} high-quality sequences.")
+    logger.info(f"  - Quality Passed:  {passed_records}")
+    logger.info(f"  - High-Risk Alerts: {flagged_records}")
+    logger.info(f"  - Filtered output saved to: {output_file}") 
 
 if __name__ == "__main__":
     main()
