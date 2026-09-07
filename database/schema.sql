@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS patients (
 
 -- Table 2: Filtered sequences and Quality metrics
 CREATE TABLE IF NOT EXISTS genomic_sequences (
-    sequence_id INT PRIMARY KEY AUTOINCREMENT,
+    sequence_id INTEGER PRIMARY KEY AUTOINCREMENT,
     patient_id TEXT NOT NULL,
     sequence_string TEXT NOT NULL,
     sequence_length INT NOT NULL,
