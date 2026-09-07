@@ -1,78 +1,81 @@
+"""
+Genomic-ETL Pipeline Orchestrator (`main.py`).
+
+Coordinates execution across the three pipeline stages:
+1. Extraction & Validation (pipeline/extract.py)
+2. Transformation, QC & Biomarker Scanning (pipeline/transform.py)
+3. Loading, Vectorization & SQL Ingestion (pipeline/load.py)
+"""
+
 import os
-import sys
 import subprocess
+import sys
+from pipeline.logger import get_logger
+
+logger = get_logger("orchestrator")
+
+
+def run_stage(command: list, stage_name: str) -> None:
+    """
+    Executes a pipeline stage subprocess and monitors exit codes.
+
+    Args:
+        command (list): Subprocess command and arguments list.
+        stage_name (str): Identifier for logging context.
+
+    Raises:
+        SystemExit: If the subprocess returns a non-zero exit code.
+    """
+    logger.info(f"Starting {stage_name}...")
+    proc = subprocess.run(command, capture_output=False)
+
+    if proc.returncode != 0:
+        logger.error(
+            f"Pipeline aborted: {stage_name} failed with exit code {proc.returncode}."
+        )
+        sys.exit(proc.returncode)
+
+    logger.info(f"{stage_name} completed successfully.")
+
 
 def main():
+    """
+    CLI orchestrator entry point for end-to-end execution.
+    """
     if len(sys.argv) != 2:
-        print("Usage Error!")
+        logger.error("Invalid arguments provided.")
         print("Usage: python3 main.py <inputfile.fastq>")
         sys.exit(1)
-        
+
     input_file = sys.argv[1]
-    
     staging_file = "outputs/extracted_stage.tmp"
     filtered_file = "outputs/filtered_stage.tmp"
 
-    print("\n==================================================")
-    print("🧬 Starting Genomic-ETL Pipeline Engine 🧬")
-    print("==================================================\n")
+    os.makedirs("outputs", exist_ok=True)
 
-# --------------------------------------------------
-# STAGE 1: EXTRACTION & VALIDATION
-# --------------------------------------------------
-    
-    print("\n--------------------------------------------------")
-    print("[STAGE 1] Running Extraction Engine...")
-    print("--------------------------------------------------\n")
+    logger.info("Initializing Genomic-ETL Pipeline Engine")
+    logger.info(f"Source target: {input_file}")
 
-    extract_proc = subprocess.run(["python3", "pipeline/extract.py", input_file], capture_output=False)
-    
-    if extract_proc.returncode != 0:
-        print("Pipeline failed at Stage 1: Extraction aborted.")
-        sys.exit(extract_proc.returncode) 
-    print("\n---------------Stage 1 complete.------------------\n")
+    # Stage 1: Extraction & Validation
+    run_stage(
+        ["python3", "pipeline/extract.py", input_file],
+        "Stage 1 [Extraction & Validation]",
+    )
 
-# --------------------------------------------------
-# STAGE 2: QUALITY TRANSFORMATION & FILTERING
-# --------------------------------------------------
-
-    print("\n--------------------------------------------------")
-    print("[STAGE 2] Running Transformation Engine...")
-    print("--------------------------------------------------\n")
-
-    trans_process = subprocess.run(
+    # Stage 2: Quality Transformation & Filtering
+    run_stage(
         ["python3", "pipeline/transform.py", staging_file],
-        capture_output=False
+        "Stage 2 [QC & Motif Scanning]",
     )
 
-    if trans_process.returncode != 0:
-        print("\nPipeline aborted: Stage 2 Transformation failed.")
-        sys.exit(trans_process.returncode)
-
-    print("\n---------------Stage 2 complete.------------------\n")
-
-# --------------------------------------------------
-# STAGE 3: LOADING & VECTORIZATION
-# --------------------------------------------------
-
-    print("\n--------------------------------------------------")
-    print("[STAGE 3] Running Loading Engine...")
-    print("--------------------------------------------------\n")
-
-    load_process = subprocess.run(
-        ["python3", "-m", "pipeline.load", filtered_file], 
-        capture_output=False
+    # Stage 3: Loading, Vectorization & SQL Ingestion
+    run_stage(
+        ["python3", "-m", "pipeline.load", filtered_file],
+        "Stage 3 [Vectorization & SQL Loader]",
     )
 
-    if load_process.returncode != 0:
-        print("\nPipeline aborted: Stage 3 Loading failed.")
-        sys.exit(load_process.returncode)
+    logger.info("Genomic-ETL Pipeline execution completed successfully.")
 
-    print("\n---------------Stage 3 complete.------------------\n")
-
-    print("\n==================================================")
-    print("Genomic-ETL Pipeline Successfully Executed!")
-    print("==================================================\n")
 
 if __name__ == "__main__":
     main()
