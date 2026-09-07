@@ -7,11 +7,12 @@ CREATE TABLE IF NOT EXISTS patients (
 
 -- Table 2: Filtered sequences and Quality metrics
 CREATE TABLE IF NOT EXISTS genomic_sequences (
-    sequence_id INT PRIMARY KEY,
-    patient_id TEXT,
-    sequence_string TEXT,
-    avg_quality_score REAL,
-    FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+    sequence_id INT PRIMARY KEY AUTOINCREMENT,
+    patient_id TEXT NOT NULL,
+    sequence_string TEXT NOT NULL,
+    sequence_length INT NOT NULL,
+    vg_quality_score REAL NOT NULL CHECK (avg_quality_score >= 0.0),
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
 );
 
 -- Table 3: Biomarker Detections
