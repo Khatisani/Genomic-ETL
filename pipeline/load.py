@@ -17,6 +17,9 @@ import json
 import sqlite3
 import numpy as np
 from pipeline.transform import parse_staged_records, ascii_to_phred, contains_motif, load_biomarkers
+from pipeline.logger import get_logger
+
+logger = get_logger("stage3_load")
 
 def one_hot_encode_seq(sequence):
     """
@@ -123,7 +126,7 @@ def main():
     CLI Entry point for Stage 3 Loader and Tensor export.
     """
     if len(sys.argv) != 2:
-        print("Usage: python3 pipeline/load.py <transformed_stage.tmp>")
+        logger.error("Usage: python3 pipeline/load.py <transformed_stage.tmp>")
         sys.exit(1)
         
     staging_file = sys.argv[1]
@@ -132,7 +135,7 @@ def main():
     
     os.makedirs("outputs", exist_ok=True)
     
-    print(f"Executing Stage 3 Loader: Writing records into SQLite database '{db_path}'...")
+    logger.info(f"Executing Stage 3 Loader: Writing records into SQLite database '{db_path}'...")
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -186,12 +189,12 @@ def main():
     conn.commit()
     conn.close()
 
-    print(f"\nStage 3 Summary:")
-    print(f"  - Total SQL Records Loaded: {record_count}")
-    print(f"  - Features Shape (Sequences): {X_seq.shape}")
-    print(f"  - Features Shape (Qualities): {X_qual.shape}")
-    print(f"  - Labels Shape:               {y.shape}")
-    print(f"\nDatabase successfully updated at '{db_path}'!")
+    logger.info(f"\nStage 3 Summary:")
+    logger.info(f"  - Total SQL Records Loaded: {record_count}")
+    logger.info(f"  - Features Shape (Sequences): {X_seq.shape}")
+    logger.info(f"  - Features Shape (Qualities): {X_qual.shape}")
+    logger.info(f"  - Labels Shape:               {y.shape}")
+    logger.info(f"\nDatabase successfully updated at '{db_path}'!")
 
 if __name__ == "__main__":
     main()
