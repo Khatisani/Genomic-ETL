@@ -10,6 +10,9 @@ to a staging temporary file.
 
 import os
 import sys
+from pipeline.logger import get_logger
+
+logger = get_logger("stage1_extract")
 
 def check_validity(input_path):
     """
@@ -23,11 +26,11 @@ def check_validity(input_path):
     """
     
     if not os.path.exists(input_path):
-        print(f"Error: The file '{input_path}' does not exist.")
+        logger.error(f"Error: The file '{input_path}' does not exist.")
         sys.exit(1)
     
     if not (input_path.endswith('.fastq') or input_path.endswith('.fq')):
-        print(f"Error: Invalid extension. '{input_path}' must be a .fastq or .fq file.")
+        logger.error(f"Error: Invalid extension. '{input_path}' must be a .fastq or .fq file.")
         sys.exit(1)
 
 def validate_fastq_structure(input_path):
@@ -50,20 +53,20 @@ def validate_fastq_structure(input_path):
         lines = [f.readline().strip() for _ in range(4)]
         
         if not lines[0]:
-            print("Error: The provided FASTQ file is completely empty.")
+            logger.error("Error: The provided FASTQ file is completely empty.")
             sys.exit(1)
         if any(not line for line in lines):
-            print("Error: FASTQ file is malformed. Incomplete initial 4-line record block.")
+            logger.error("Error: FASTQ file is malformed. Incomplete initial 4-line record block.")
             sys.exit(1)
         
         if not lines[0].startswith('@'):
-            print(f" Format Error: Line 1 must begin with '@'. Found: '{lines[0][0]}'")
+            logger.error(f" Format Error: Line 1 must begin with '@'. Found: '{lines[0][0]}'")
             sys.exit(1)
         if not lines[2].startswith('+'):
-            print(f"Format Error: Line 3 must begin with '+'. Found: '{lines[2][0]}'")
+            logger.error(f"Format Error: Line 3 must begin with '+'. Found: '{lines[2][0]}'")
             sys.exit(1)
         if len(lines[1]) != len(lines[3]):
-            print(f"Format Error: Sequence length ({len(lines[1])}) mismatch with Quality string length ({len(lines[3])}).")
+            logger.error(f"Format Error: Sequence length ({len(lines[1])}) mismatch with Quality string length ({len(lines[3])}).")
             sys.exit(1)
 
 
@@ -82,8 +85,8 @@ def main():
     check_validity(input_file)
     validate_fastq_structure(input_file)
     
-    print(f"File check passed for: {input_file}")
-    print("Extracting raw sequences...")
+    logger.info(f"File check passed for: {input_file}")
+    logger.info("Extracting raw sequences...")
     
     os.makedirs("outputs", exist_ok=True)
     
@@ -102,8 +105,8 @@ def main():
             outfile.write(f"{line1}{line2}{line3}{line4}")
             total_records += 1
             
-    print(f"Extraction Complete.")
-    print(f"Staged {total_records} raw records in '{output_staging_file}'")
+    logger.info(f"Extraction Complete.")
+    logger.info(f"Staged {total_records} raw records in '{output_staging_file}'")
 
 if __name__ == "__main__":
     main()
