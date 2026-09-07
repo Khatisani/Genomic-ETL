@@ -2,5 +2,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+__pycache__/
+*.py[cod]
+*$py.class
 
 .DS_Store
+# Python cache
+__pycache__/
+*.py[cod]

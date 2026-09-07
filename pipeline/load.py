@@ -150,40 +150,61 @@ def main():
 
     record_count = 0
 
-    for idx, (header, seq, spacer, qual) in enumerate(parse_staged_records(staging_file)):
+    for idx, (header, seq, spacer, qual) in enumerate(
+        parse_staged_records(staging_file)
+    ):
         patient_id = header.split()[0].strip()
         phred_scores = ascii_to_phred(qual)
-        avg_quality = float(np.mean(phred_scores)) if phred_scores else 0.0
+        avg_quality = float(np.mean(phred_scores)) if len(phred_scores) > 0 else 0.0
         clean_seq = seq.strip()
-        
-        cursor.execute("INSERT OR IGNORE INTO patients (patient_id) VALUES (?)", (patient_id,))
 
+        # 1. Ingest patient record
+        cursor.execute(
+            "INSERT OR IGNORE INTO patients (patient_id) VALUES (?)",
+            (patient_id,),
+        )
+
+        # 2. Insert genomic sequence record
         cursor.execute(
             """
-            INSERT INTO genomic_sequences (sequence_id, patient_id, sequence_string, avg_quality_score)
+            INSERT INTO genomic_sequences (patient_id, sequence_string, sequence_length, avg_quality_score)
             VALUES (?, ?, ?, ?)
             """,
-            (patient_id, clean_seq, len(clean_seq), avg_quality)
+            (patient_id, clean_seq, len(clean_seq), avg_quality),
         )
+        
+        # IMMEDIATELY grab the autoincremented sequence_id
         sequence_id = cursor.lastrowid
         record_count += 1
 
-        matched_motif = contains_motif(seq, biomarkers)
+        # Defensive assertion
+        if sequence_id is None:
+            raise RuntimeError(
+                f"cursor.lastrowid returned None after inserting sequence for patient '{patient_id}'."
+            )
+
+        # 3. Register biomarker alert if detected
+        matched_motif = contains_motif(clean_seq, biomarkers)
         if matched_motif:
             cursor.execute(
                 """
-                INSERT INTO biomarker_alerts (alert_id, patient_id, matched_window)
+                INSERT INTO biomarker_alerts (sequence_id, patient_id, matched_window)
                 VALUES (?, ?, ?)
                 """,
-                (sequence_id, patient_id, matched_motif)
+                (sequence_id, patient_id, matched_motif),
+            )
+            record_count += 1
+            logger.warning(
+                f"Persisted alert for Patient: {patient_id} (Sequence ID: {sequence_id})"
             )
 
+        # 4. Insert corresponding ML feature metadata
         cursor.execute(
             """
-            INSERT INTO ml_features (feature_id, patient_id, feature_shape, label)
+            INSERT INTO ml_features (sequence_id, patient_id, feature_shape, label)
             VALUES (?, ?, ?, ?)
             """,
-            (sequence_id, patient_id, str(X_seq.shape), int(y[idx][0]))
+            (sequence_id, patient_id, str(X_seq.shape), int(y[idx][0])),
         )
 
     conn.commit()

@@ -58,13 +58,13 @@ def main():
 
     # Stage 1: Extraction & Validation
     run_stage(
-        ["python3", "pipeline/extract.py", input_file],
+        ["python3", "-m", "pipeline.extract", input_file],
         "Stage 1 [Extraction & Validation]",
     )
 
     # Stage 2: Quality Transformation & Filtering
     run_stage(
-        ["python3", "pipeline/transform.py", staging_file],
+        ["python3", "-m", "pipeline.transform", staging_file],
         "Stage 2 [QC & Motif Scanning]",
     )
 
