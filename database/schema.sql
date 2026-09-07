@@ -1,7 +1,8 @@
 
 -- Table 1: Patient Records
 CREATE TABLE IF NOT EXISTS patients (
-    patient_id TEXT PRIMARY KEY
+    patient_id TEXT PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table 2: Filtered sequences and Quality metrics
