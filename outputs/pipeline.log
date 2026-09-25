@@ -276,3 +276,95 @@ Stage 3 Summary:
 Database successfully updated at 'outputs/genomic_pipeline.db'!
 2026-09-07 12:36:53 [INFO] [orchestrator]: Stage 3 [Vectorization & SQL Loader] completed successfully.
 2026-09-07 12:36:53 [INFO] [orchestrator]: Genomic-ETL Pipeline execution completed successfully.
+2026-09-25 09:40:15 [INFO] [orchestrator]: Initializing Genomic-ETL Pipeline Engine
+2026-09-25 09:40:15 [INFO] [orchestrator]: Source target: data/multi_seq.fastq
+2026-09-25 09:40:15 [INFO] [orchestrator]: Starting Stage 1 [Extraction & Validation]...
+2026-09-25 09:40:15 [INFO] [stage1_extract]: File check passed for: data/multi_seq.fastq
+2026-09-25 09:40:15 [INFO] [stage1_extract]: Extracting raw sequences...
+2026-09-25 09:40:15 [INFO] [stage1_extract]: Extraction Complete.
+2026-09-25 09:40:15 [INFO] [stage1_extract]: Staged 3 raw records in 'outputs/extracted_stage.tmp'
+2026-09-25 09:40:15 [INFO] [orchestrator]: Stage 1 [Extraction & Validation] completed successfully.
+2026-09-25 09:40:15 [INFO] [orchestrator]: Starting Stage 2 [QC & Motif Scanning]...
+2026-09-25 09:40:16 [INFO] [stage2_transform]: 
+Record 1 PASSED (Avg Q: 39.8)
+2026-09-25 09:40:16 [INFO] [stage2_transform]:    Sequence: GCTAGCTAGCATGATTACATAACCGGTTTAAAGATCGGCACATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATC
+2026-09-25 09:40:16 [WARNING] [stage2_transform]: 
+   ALERT: Record 1 PASSED Quality, but MATCHED biomarker!
+2026-09-25 09:40:16 [INFO] [stage2_transform]:    Patient ID: @PATIENT_01_RISK_MATCH
+2026-09-25 09:40:16 [INFO] [stage2_transform]:    Matched Sequence Window: ATGATTACATAACCG...
+2026-09-25 09:40:16 [INFO] [stage2_transform]: 
+Record 2 REJECTED due to low quality parameters.
+2026-09-25 09:40:16 [INFO] [stage2_transform]: 
+Record 2: Passed Quality and cleared of known risk variables.
+2026-09-25 09:40:16 [INFO] [stage2_transform]: 
+Record 3 PASSED (Avg Q: 39.9)
+2026-09-25 09:40:16 [INFO] [stage2_transform]:    Sequence: GCTAGCTAGCCCCGGTTTAAATTTTTCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATC
+2026-09-25 09:40:16 [INFO] [stage2_transform]: 
+Record 3: Passed Quality and cleared of known risk variables.
+2026-09-25 09:40:16 [INFO] [stage2_transform]: 
+Transformation Phase Finished Summary:
+
+2026-09-25 09:40:16 [INFO] [stage2_transform]:   - Total processed: 3
+2026-09-25 09:40:16 [INFO] [stage2_transform]:   - Retained: 2/3 high-quality sequences.
+2026-09-25 09:40:16 [INFO] [stage2_transform]:   - Quality Passed:  2
+2026-09-25 09:40:16 [INFO] [stage2_transform]:   - High-Risk Alerts: 1
+2026-09-25 09:40:16 [INFO] [stage2_transform]:   - Filtered output saved to: outputs/filtered_stage.tmp
+2026-09-25 09:40:16 [INFO] [orchestrator]: Stage 2 [QC & Motif Scanning] completed successfully.
+2026-09-25 09:40:16 [INFO] [orchestrator]: Starting Stage 3 [Vectorization & SQL Loader]...
+2026-09-25 09:40:16 [INFO] [stage3_load]: Executing Stage 3 Loader: Writing records into SQLite database 'outputs/genomic_pipeline.db'...
+2026-09-25 09:40:16 [WARNING] [stage3_load]: Persisted alert for Patient: @PATIENT_01_RISK_MATCH (Sequence ID: 2)
+2026-09-25 09:40:16 [INFO] [stage3_load]: 
+Stage 3 Summary:
+2026-09-25 09:40:16 [INFO] [stage3_load]:   - Total SQL Records Loaded: 3
+2026-09-25 09:40:16 [INFO] [stage3_load]:   - Features Shape (Sequences): (2, 100, 4)
+2026-09-25 09:40:16 [INFO] [stage3_load]:   - Features Shape (Qualities): (2, 100)
+2026-09-25 09:40:16 [INFO] [stage3_load]:   - Labels Shape:               (2, 1)
+2026-09-25 09:40:16 [INFO] [stage3_load]: 
+Database successfully updated at 'outputs/genomic_pipeline.db'!
+2026-09-25 09:40:16 [INFO] [orchestrator]: Stage 3 [Vectorization & SQL Loader] completed successfully.
+2026-09-25 09:40:16 [INFO] [orchestrator]: Genomic-ETL Pipeline execution completed successfully.
+2026-09-25 09:41:46 [INFO] [orchestrator]: Initializing Genomic-ETL Pipeline Engine
+2026-09-25 09:41:46 [INFO] [orchestrator]: Source target: data/sample1.fastq
+2026-09-25 09:41:46 [INFO] [orchestrator]: Starting Stage 1 [Extraction & Validation]...
+2026-09-25 09:41:46 [INFO] [stage1_extract]: File check passed for: data/sample1.fastq
+2026-09-25 09:41:46 [INFO] [stage1_extract]: Extracting raw sequences...
+2026-09-25 09:41:46 [INFO] [stage1_extract]: Extraction Complete.
+2026-09-25 09:41:46 [INFO] [stage1_extract]: Staged 3 raw records in 'outputs/extracted_stage.tmp'
+2026-09-25 09:41:46 [INFO] [orchestrator]: Stage 1 [Extraction & Validation] completed successfully.
+2026-09-25 09:41:46 [INFO] [orchestrator]: Starting Stage 2 [QC & Motif Scanning]...
+2026-09-25 09:41:47 [INFO] [stage2_transform]: 
+Record 1 PASSED (Avg Q: 25.3)
+2026-09-25 09:41:47 [INFO] [stage2_transform]:    Sequence: CCCTTCTTGTCTTCAGCGTTTCTCC
+2026-09-25 09:41:47 [INFO] [stage2_transform]: 
+Record 1: Passed Quality and cleared of known risk variables.
+2026-09-25 09:41:47 [INFO] [stage2_transform]: 
+Record 2 PASSED (Avg Q: 24.5)
+2026-09-25 09:41:47 [INFO] [stage2_transform]:    Sequence: TTGGCAGGCCAAGGCCGATGGATCA
+2026-09-25 09:41:47 [INFO] [stage2_transform]: 
+Record 2: Passed Quality and cleared of known risk variables.
+2026-09-25 09:41:47 [INFO] [stage2_transform]: 
+Record 3 PASSED (Avg Q: 23.4)
+2026-09-25 09:41:47 [INFO] [stage2_transform]:    Sequence: GTTGCTTCTGGCGTGGGTGGGGGGG
+2026-09-25 09:41:47 [INFO] [stage2_transform]: 
+Record 3: Passed Quality and cleared of known risk variables.
+2026-09-25 09:41:47 [INFO] [stage2_transform]: 
+Transformation Phase Finished Summary:
+
+2026-09-25 09:41:47 [INFO] [stage2_transform]:   - Total processed: 3
+2026-09-25 09:41:47 [INFO] [stage2_transform]:   - Retained: 3/3 high-quality sequences.
+2026-09-25 09:41:47 [INFO] [stage2_transform]:   - Quality Passed:  3
+2026-09-25 09:41:47 [INFO] [stage2_transform]:   - High-Risk Alerts: 0
+2026-09-25 09:41:47 [INFO] [stage2_transform]:   - Filtered output saved to: outputs/filtered_stage.tmp
+2026-09-25 09:41:47 [INFO] [orchestrator]: Stage 2 [QC & Motif Scanning] completed successfully.
+2026-09-25 09:41:47 [INFO] [orchestrator]: Starting Stage 3 [Vectorization & SQL Loader]...
+2026-09-25 09:41:47 [INFO] [stage3_load]: Executing Stage 3 Loader: Writing records into SQLite database 'outputs/genomic_pipeline.db'...
+2026-09-25 09:41:47 [INFO] [stage3_load]: 
+Stage 3 Summary:
+2026-09-25 09:41:47 [INFO] [stage3_load]:   - Total SQL Records Loaded: 3
+2026-09-25 09:41:47 [INFO] [stage3_load]:   - Features Shape (Sequences): (3, 100, 4)
+2026-09-25 09:41:47 [INFO] [stage3_load]:   - Features Shape (Qualities): (3, 100)
+2026-09-25 09:41:47 [INFO] [stage3_load]:   - Labels Shape:               (3, 1)
+2026-09-25 09:41:47 [INFO] [stage3_load]: 
+Database successfully updated at 'outputs/genomic_pipeline.db'!
+2026-09-25 09:41:47 [INFO] [orchestrator]: Stage 3 [Vectorization & SQL Loader] completed successfully.
+2026-09-25 09:41:47 [INFO] [orchestrator]: Genomic-ETL Pipeline execution completed successfully.
