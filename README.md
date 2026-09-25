@@ -154,9 +154,6 @@ Hypothetical Data (biomarkers.fasta, example.fastq, multi_seq.fastq): Programmat
 
 Real-World Benchmark Data (data/sample1.fastq): Obtained directly from the open-source Galaxy Project Test Data Repository. This contains authentic sequencer outputs with real biological base calls and instrument quality scores, serving as our true production benchmark.
 
-## Future directions
-4. How to handle big files?
 
-5. Should I automate so it runs as soon as a file is uploaded?
 
 WTC-AC6ZHTH9
