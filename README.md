@@ -87,9 +87,16 @@ Genomic-ETL/
 │   └── test_db.py               # Schema & database integrity test
 │
 ├── main.py                      # Master Pipeline Orchestrator
+│
+├── dashboard.py                 # Streamlit clinical surveillance & monitoring dashboard
+│
+├──requirements.txt              # Project dependencies (numpy, pandas, streamlit)
 └── README.md                    # Project Documentation
 
 ```
+
+## Prerequisites 
+`pip install -r requirements.txt`
 
 ## How to run the current pipeline
 
