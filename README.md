@@ -27,6 +27,10 @@ Nucleotide Sequence: The raw base calls (A, C, G, T, or N for unknown). ​
 Separator (+): Marker line separating sequence from quality scores. 
 ​Phred Quality String: ASCII characters encoding the machine's confidence in each base call. 
 
+<p align="center">
+  <img src="assets/fastq.png" alt="Exampler Fastq File" width="800"/>
+</p>
+
 ### The Challenges:
 
 ​Sequencer Noise: Sequencers make mistakes. Low-quality base calls (low Phred scores) can look like false-positive risk mutations.
