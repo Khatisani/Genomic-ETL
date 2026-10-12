@@ -98,6 +98,11 @@ Genomic-ETL/
 ## Prerequisites 
 `pip install -r requirements.txt`
 
+## Launch the Application
+
+`streamlit run dashboard.py`
+
+
 ## How to run the current pipeline
 
 ### Run the pipeline directly:
