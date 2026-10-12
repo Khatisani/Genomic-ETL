@@ -3,6 +3,8 @@
 Genomic-ETL is a small, end-to-end Python data pipeline built to ingest raw DNA sequencing files, apply quality control (QC) filtering, screen for high-risk pharmacogenomic biomarkers, and convert biological sequence data into machine-learning-ready tensors and clinical JSON database records.
 
 
+
+
 ## The Clinical Scenario: Compound-K 
 
 ​Compound-K is a hypothetical psychiatric drug developed for treatment resistant clinical depression. During Phase III clinical trials, researchers identified specific pharmacogenomic biomarkers—short DNA sequence motifs—strongly correlated with severe adverse drug reactions (ADRs), such as neurotoxicity and acute liver injury.
