@@ -10,3 +10,6 @@ __pycache__/
 # Python cache
 __pycache__/
 *.py[cod]
+.vscode/
+__pycache__/
+*.py[cod]
