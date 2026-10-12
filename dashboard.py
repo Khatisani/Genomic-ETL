@@ -15,8 +15,205 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+    .stApp {
+        background-color: #ffdce5 !important;
+        background-image: radial-gradient(#fca5ba 1.5px, transparent 1.5px) !important;
+        background-size: 20px 20px !important;
+        font-family: 'Fredoka', cursive, sans-serif !important;
+        color: #4a0d20 !important;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: #f76c8c !important;
+        border-right: 4px solid #4a0d20 !important;
+    }
+
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] label {
+        color: #ffffff !important;
+        text-shadow: 2px 2px 0px #4a0d20;
+        font-family: 'Fredoka', cursive, sans-serif !important;
+    }
+
+    h1, h2, h3, h4, p, label {
+        font-family: 'Fredoka', cursive, sans-serif !important;
+    }
+
+    h1 {
+        color: #ff2a6d !important;
+        text-shadow: 2px 2px 0px #4e071e, 4px 4px 0px #ffb3c1 !important;
+        text-align: center;
+        margin-top: 1rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    h2, h3 {
+        color: #8c0f34 !important;
+    }
+
+    button, .stButton>button {
+        background: #ff4d6d !important;
+        color: white !important;
+        border: 3px solid #4a0d20 !important;
+        border-radius: 20px !important;
+        box-shadow: 0px 5px 0px #4a0d20 !important;
+        font-weight: bold !important;
+        text-shadow: 1px 1px 0px #4a0d20;
+        transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+    }
+
+    button:active, .stButton>button:active {
+        transform: translateY(4px) !important;
+        box-shadow: 0px 1px 0px #4a0d20 !important;
+    }
+
+    button:hover, .stButton>button:hover {
+        background: #ff758f !important;
+        color: white !important;
+    }
+
+    [data-testid="stMetricLabel"] p {
+        color: #8c0f34 !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+    }
+
+    [data-testid="stMetricValue"] div {
+        color: #ff2a6d !important;
+        font-size: 2.2rem !important;
+        font-weight: 800 !important;
+    }
+
+    [data-testid="stMetric"] {
+        background-color: #ffffff !important;
+        border: 3px solid #5c1d30 !important;
+        border-radius: 20px !important;
+        box-shadow: 4px 4px 0px #5c1d30 !important;
+        padding: 10px 15px !important;
+    }
+
+    [data-testid="stDataFrame"] {
+        border: 3px solid #4a0d20 !important;
+        border-radius: 18px !important;
+        overflow: hidden !important;
+        box-shadow: 4px 4px 0px #4a0d20 !important;
+        background-color: #ffffff !important;
+    }
+
+    [data-testid="stDataFrame"] div, [data-testid="stDataFrame"] canvas {
+        filter: invert(0) !important;
+    }
+
+    .stTextArea textarea, .stTextInput input, [data-baseweb="select"] {
+        background-color: #ffffff !important;
+        color: #4a0d20 !important;
+        border: 3px solid #4a0d20 !important;
+        border-radius: 16px !important;
+        font-family: 'Fredoka', cursive, sans-serif !important;
+        font-size: 1rem !important;
+        box-shadow: 3px 3px 0px #4a0d20 !important;
+    }
+
+    [data-testid="stFileUploader"] {
+        width: 100% !important;
+    }
+
+    [data-testid="stFileUploader"] section {
+        background-color: #ffffff !important;
+        border: 3px dashed #ff4d6d !important;
+        border-radius: 20px !important;
+        padding: 20px 15px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+    }
+
+    [data-testid="stFileUploader"] button {
+        background: #ff4d6d !important;
+        color: white !important;
+        border: 2px solid #4a0d20 !important;
+        border-radius: 15px !important;
+        box-shadow: 0px 3px 0px #4a0d20 !important;
+        padding: 6px 18px !important;
+        font-family: 'Fredoka', cursive, sans-serif !important;
+        font-size: 0.95rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: static !important;
+        height: auto !important;
+        width: auto !important;
+    }
+
+    [data-testid="stFileUploader"] section span,
+    [data-testid="stFileUploader"] section small {
+        color: #8c0f34 !important;
+        font-family: 'Fredoka', cursive, sans-serif !important;
+        font-size: 0.85rem !important;
+        display: block !important;
+        position: static !important;
+        margin: 0 !important;
+        line-height: 1.4 !important;
+    }
+
+    button[data-baseweb="tab"] {
+        color: #8c0f34 !important;
+        font-weight: 600 !important;
+        font-family: 'Fredoka', cursive, sans-serif !important;
+    }
+
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #ff2a6d !important;
+        border-bottom-color: #ff2a6d !important;
+        border-bottom-width: 4px !important;
+    }
+
+    .stAlert {
+        border-radius: 20px !important;
+        border: 3px solid #5c1d30 !important;
+        box-shadow: 4px 4px 0px #5c1d30 !important;
+    }
+
+    code {
+        background-color: #ffcad4 !important;
+        color: #4a0d20 !important;
+        border: 2px solid #4a0d20 !important;
+        border-radius: 10px !important;
+        padding: 2px 8px !important;
+        font-weight: bold !important;
+    }
+
+    hr {
+        border: 2px dashed #ff4d6d !important;
+    }
+
+    [data-testid="stIcon"], 
+    [data-testid="stSidebarCollapseButton"] span,
+    [data-testid="stSidebarExpandButton"] span,
+    span[class*="material-symbols"], 
+    span[class*="icon"],
+    .material-symbols-rounded,
+    .material-symbols-sharp,
+    .material-symbols-outlined {
+        font-family: "Material Symbols Rounded", "Source Sans Pro", sans-serif !important;
+        font-feature-settings: "liga" 1 !important;
+        text-shadow: none !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
 st.title("Genomic-ETL Clinical & Ingestion Monitor")
-st.caption("End-to-end pipeline execution, FASTQ file ingestion, biomarker surveillance, and ad-hoc sequence testing.")
+st.caption("<div style='text-align:center; font-weight:bold; color:#8c0f34;'>End-to-end pipeline execution, FASTQ file ingestion, biomarker surveillance, and ad-hoc sequence testing! ✨</div>", unsafe_allow_html=True)
 
 def load_biomarkers():
     biomarkers = {}
