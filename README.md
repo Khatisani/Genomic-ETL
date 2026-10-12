@@ -1,9 +1,10 @@
 # Genomic-ETL
 
-Genomic-ETL is a small, end-to-end Python data pipeline built to ingest raw DNA sequencing files, apply quality control (QC) filtering, screen for high-risk pharmacogenomic biomarkers, and convert biological sequence data into machine-learning-ready tensors and clinical JSON database records.
+Genomic-ETL is a small, end-to-end Python data pipeline built to ingest raw DNA sequencing files, apply quality control (QC) filtering, screen for high-risk pharmacogenomic biomarkers, and convert biological sequence data into machine-learning-ready tensors and clinical database records.
 
-
-
+<p align="center">
+  <img src="assets/preview.png" alt="Dashboard Preview" width="800"/>
+</p>
 
 ## The Clinical Scenario: Compound-K 
 
